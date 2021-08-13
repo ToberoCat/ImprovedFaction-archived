@@ -1,9 +1,11 @@
-[ {
-  "name" : "Example Extension",
-  "description" : "This extension is a .json example",
-  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/extensions.json"
-}, {
-  "name" : "ChatMessageExtension",
-  "description" : "This extension is used if you want to display the faction the user is a part of before his message. Example: [FactionName] Notch: Hello. This is an example",
-  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/extensions.json"
-} ]
+{
+  "extensionObjects" : [ {
+    "name" : "Example Extension",
+    "description" : "This extension is a .json example",
+    "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/extensions.json"
+  }, {
+    "name" : "ChatMessageExtension",
+    "description" : "This extension is used if you want to display the faction the user is a part of before his message. Example: [FactionName] Notch: Hello. This is an example",
+    "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/extensions.json"
+  }]
+}
