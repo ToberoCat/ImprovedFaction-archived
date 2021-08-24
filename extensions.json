@@ -1,12 +1,10 @@
 {
   "extensionObjects" : [ {
     "name" : "ExampleExtension",
-    "version" : "1.0",
     "description" : "This extension is a .json example",
     "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master"
   }, {
     "name" : "ChatMessageExtension",
-    "version" : "1.0",
     "description" : "This extension is used if you want to display the faction the user is a part off. Example: [FactionName] Notch: Hello. This is an example",
     "download" : "https://github.com/ToberoCat/IFChatMessageExtension/blob/master/ChatMessageExtension.jar?raw=true"
   }]
