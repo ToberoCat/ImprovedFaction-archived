@@ -1,14 +1,13 @@
 {
   "extensionObjects" : [ {
-    "name" : "SettingsAndFlags",
-    "description" : "This extension is adding some flags and settings to the gui",
-    "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/SettingsAndFlagExtension.jar?raw=true"
+    "name" : "ExampleExtension",
+    "description" : "Description",
+    "download" : "https://www.youtube.com/watch?v=Yu72xH9lVe0",
     "version" : "1.0",
     "author" : "Tobero",
-    "info" : "some info",
+    "info" : "other infos to know",
     "requiresVersion" : [ "BETAv2.1.1" ],
-    "dependencies" : null
-
+    "dependencies" : [ "Dynmap", "Worldedit" ]
 }, {
     "name" : "ChatMessageExtension",
     "description" : "§8[§c§lWarning§8] §fThis extension is not compatible with the newer versions. This extension is used if you want to display the faction the user is a part off. Example: [FactionName] Notch: Hello. This is an example",
