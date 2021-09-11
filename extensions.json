@@ -4,20 +4,20 @@
     "description" : "This extension is adding some flags and settings to the gui",
     "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/SettingsAndFlagExtension.jar?raw=true",
     "displayName" : "SettingsAndFlags",
-    "version" : "1.0",
+    "version" : "1.1",
     "author" : "Tobero",
     "info" : "other infos to know",
     "requiresVersion" : [ "BETAv2.1.1" ],
     "dependencies" : null
 }, {
   "name" : "ChatMessageExtension",
-  "description" : "§8[§c§lWarning§8] §fThis extension is not compatible with the newer versions. This extension is used if you want to display the faction the user is a part off. Example: [FactionName] Notch: Hello. This is an example",
+  "description" : "This extension is used if you want to display the faction the user is a part off. Example: [FactionName] Notch: Hello. This is an example",
   "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/ChatMessageExtension.jar?raw=true",
-  "displayName" : "SettingsAndFlags",
-  "version" : "1.0",
+  "displayName" : "ChatMessageExtension",
+  "version" : "1.1",
   "author" : "Tobero",
   "info" : "other infos to know",
-  "requiresVersion" : [ "BETAv2.1.1" ],
+  "requiresVersion" : [ "BETAv2.1.1", "BETAv2.1.2" ],
   "dependencies" : null
 }]
 }
