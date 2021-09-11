@@ -2,7 +2,7 @@
   "extensionObjects" : [ {
     "name" : "SettingsAndFlags",
     "description" : "This extension is adding some flags and settings to the gui",
-    "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/SettingsAndFlagExtension.jar?raw=true",
+    "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/SettingsAndFlag.jar?raw=true",
     "displayName" : "SettingsAndFlags",
     "version" : "1.1",
     "author" : "Tobero",
@@ -22,7 +22,7 @@
 }, {
   "name" : "HomeExtension",
   "description" : "This extension adds the ability to set a faction home. Every player with the faction home teleportation permission can get ther by using §7/f home",
-  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/?raw=true",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/HomeExtension?raw=true",
   "displayName" : "HomeExtension",
   "version" : "1.0",
   "author" : "Tobero",
