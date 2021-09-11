@@ -22,7 +22,7 @@
 }, {
   "name" : "HomeExtension",
   "description" : "This extension adds the ability to set a faction home. Every player with the faction home teleportation permission can get ther by using §7/f home",
-  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/HomeExtension?raw=true",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/HomeExtension.jar?raw=true",
   "displayName" : "HomeExtension",
   "version" : "1.0",
   "author" : "Tobero",
