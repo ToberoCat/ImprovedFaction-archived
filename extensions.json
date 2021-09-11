@@ -7,7 +7,7 @@
     "version" : "1.1",
     "author" : "Tobero",
     "info" : "other infos to know",
-    "requiresVersion" : [ "BETAv2.1.1" ],
+    "requiresVersion" : [ "BETAv2.1.1", "BETAv2.1.2" ],
     "dependencies" : null
 }, {
   "name" : "ChatMessageExtension",
