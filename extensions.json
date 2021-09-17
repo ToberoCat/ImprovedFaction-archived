@@ -29,5 +29,15 @@
   "info" : "other infos to know",
   "requiresVersion" : [ "BETAv2.1.3" ],
   "dependencies" : null
+}, {
+  "name" : "DynampExtension",
+  "description" : "Display the claimed faction chunks on the dynamp",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/DynmapExtension.jar?raw=true",
+  "displayName" : "DynmapExtension",
+  "version" : "1.0",
+  "author" : "Tobero",
+  "info" : "other infos to know",
+  "requiresVersion" : [ "BETAv2.1.4" ],
+  "dependencies" : [ "Dynmap" ]
 }]
 }
