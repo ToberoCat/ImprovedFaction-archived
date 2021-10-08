@@ -38,6 +38,6 @@
   "author" : "Tobero",
   "info" : "other infos to know",
   "requiresVersion" : [ "BETAv2.1.4" ],
-  "dependencies" : [ "Dynmap" ]
+  "dependencies" : [ "dynmap" ]
 }]
 }
