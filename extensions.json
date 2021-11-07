@@ -1,6 +1,6 @@
 {
   "extensionObjects" : [ {
-    "name" : "SettingsAndFlags",
+    "name" : "SettingsAndFlagsNotWorking",
     "description" : "§c§lWarning: §r§7This extension will throw errors and WON'T work... should be fixed with the next update. §fThis extension is adding some flags and settings to the gui",
     "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/SettingsAndFlags.jar?raw=true",
     "displayName" : "SettingsAndFlags",
@@ -30,7 +30,7 @@
   "requiresVersion" : [ "BETAv3" ],
   "dependencies" : null
 }, {
-  "name" : "DynmapExtension",
+  "name" : "DynmapExtensionNotWorking",
   "description" : "§c§lWarning: §r§7This extension will throw errors and WON'T work... should be fixed with the next update. §fDisplay the claimed faction chunks on the dynamp",
   "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/DynmapExtension.jar?raw=true",
   "displayName" : "DynmapExtension",
