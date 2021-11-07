@@ -2,7 +2,7 @@
   "extensionObjects" : [ {
     "name" : "SettingsAndFlags",
     "description" : "This extension is adding some flags and settings to the gui",
-    "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/SettingsAndFlag.jar?raw=true",
+    "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/SettingsAndFlags.jar?raw=true",
     "displayName" : "SettingsAndFlags",
     "version" : "2.0",
     "author" : "Tobero",
