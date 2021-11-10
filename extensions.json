@@ -1,43 +1,43 @@
 {
   "extensionObjects" : [ {
     "name" : "SettingsAndFlagsNotWorking",
-    "description" : "§c§lWarning: §r§7This extension will throw errors and WON'T work... should be fixed with the next update. §fThis extension is adding some flags and settings to the gui",
+    "description" : "§fThis extension is adding some flags and settings to the gui",
     "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/SettingsAndFlags.jar?raw=true",
     "displayName" : "SettingsAndFlags",
-    "version" : "2.0",
+    "version" : "3.0",
     "author" : "Tobero",
     "info" : "other infos to know",
-    "requiresVersion" : [ "BETAv3" ],
+    "requiresVersion" : [ "BETAv3.0.0", "BETAv4.0.0" ],
     "dependencies" : null
 }, {
   "name" : "ChatMessageExtension",
   "description" : "This extension is used if you want to display the faction the user is a part off. Example: [FactionName] Notch: Hello. This is an example",
   "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/ChatMessageExtension.jar?raw=true",
   "displayName" : "ChatMessageExtension",
-  "version" : "2.0",
+  "version" : "3.0",
   "author" : "Tobero",
   "info" : "other infos to know",
-  "requiresVersion" : [ "BETAv3" ],
+  "requiresVersion" : [ "BETAv3.0.0", "BETAv4.0.0" ],
   "dependencies" : null
 }, {
   "name" : "HomeExtension",
   "description" : "This extension adds the ability to set a faction home. Every player with the faction home teleportation permission can get ther by using §7/f home",
   "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/HomeExtension.jar?raw=true",
   "displayName" : "HomeExtension",
-  "version" : "2.0",
+  "version" : "3.0",
   "author" : "Tobero",
   "info" : "The home extension allows players to set a faction home and teleport to it.\n§7Commands: §f/f sethome and /f home",
-  "requiresVersion" : [ "BETAv3" ],
+  "requiresVersion" : [ "BETAv3.0.0", "BETAv4.0.0" ],
   "dependencies" : null
 }, {
   "name" : "DynmapExtensionNotWorking",
-  "description" : "§c§lWarning: §r§7This extension will throw errors and WON'T work... should be fixed with the next update. §fDisplay the claimed faction chunks on the dynamp",
+  "description" : "§fDisplay the claimed faction chunks on the dynamp",
   "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/DynmapExtension.jar?raw=true",
   "displayName" : "DynmapExtension",
-  "version" : "2.0",
+  "version" : "3.0",
   "author" : "Tobero",
   "info" : "other infos to know",
-  "requiresVersion" : [ "BETAv3" ],
+  "requiresVersion" : [ "BETAv3.0.0", "BETAv4.0.0" ],
   "dependencies" : [ "dynmap" ]
 }]
 }
