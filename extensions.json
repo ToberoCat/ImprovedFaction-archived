@@ -1,6 +1,6 @@
 {
   "extensionObjects" : [ {
-    "name" : "SettingsAndFlagsNotWorking",
+    "name" : "SettingsAndFlags",
     "description" : "§fThis extension is adding some flags and settings to the gui",
     "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/SettingsAndFlags.jar?raw=true",
     "displayName" : "SettingsAndFlags",
@@ -30,7 +30,7 @@
   "requiresVersion" : [ "BETAv3.0.0", "BETAv4.0.0" ],
   "dependencies" : null
 }, {
-  "name" : "DynmapExtensionNotWorking",
+  "name" : "DynmapExtension",
   "description" : "§fDisplay the claimed faction chunks on the dynamp",
   "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/DynmapExtension.jar?raw=true",
   "displayName" : "DynmapExtension",
@@ -39,5 +39,15 @@
   "info" : "other infos to know",
   "requiresVersion" : [ "BETAv3.0.0", "BETAv4.0.0" ],
   "dependencies" : [ "dynmap" ]
+}, {
+  "name" : "FlyCommandExtension",
+  "description" : "§fAdd the /f fly command. You can fly in the claimed chunks",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/FlyCommandExtension.jar?raw=true",
+  "displayName" : "FlyCommandExtension",
+  "version" : "1.0",
+  "author" : "Tobero",
+  "info" : "other infos to know",
+  "requiresVersion" : [ "BETAv4.0.0" ],
+  "dependencies" : null
 }]
 }
