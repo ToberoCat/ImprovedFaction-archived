@@ -49,5 +49,15 @@
   "info" : "other infos to know",
   "requiresVersion" : [ "BETAv4.0.0" ],
   "dependencies" : null
+}, {
+  "name" : "MCoreConverter",
+  "description" : "§fThis extension is for converting your massive core faction data to improvedFactions",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/MCoreConverter.jar?raw=true",
+  "displayName" : "MCoreConverter",
+  "version" : "1.0",
+  "author" : "Tobero",
+  "info" : "other infos to know",
+  "requiresVersion" : [ "BETAv4.0.0" ],
+  "dependencies" : null
 }]
 }
