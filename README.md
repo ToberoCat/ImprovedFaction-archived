@@ -1,7 +1,9 @@
 <h1 align="center">Improved Factions</h1>
 <h3 align="center">A minecraft spigot plugin</h3>
 
-<h2 align="center">Do not use this code for own purpose</h2>
+<h2 align="center">License - GNU Lesser General Public License v3.0</h2>
+I spent hours making this code, so please don't use it for your own purposes.
+
 You are allowed to use it for private use cases, but you must not upload it as your own.
 Don't use any files outside of this project for your own plugins.
 
