@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="ImprovedFactions-BETAv4.0.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../Server1.17.1/plugins/ImprovedFactions-BETAv4.0.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="HomeCommandExtension:jar">
+    <output-path>$PROJECT_DIR$/../../Server1.17.1/plugins/ImprovedFactions/Extensions/artifacts/HomeCommandExtension_jar</output-path>
+    <root id="archive" name="HomeCommandExtension.jar">
+      <element id="module-output" name="HomeCommandExtension" />
+      <element id="library" level="module" name="ImprovedFactions-BETAv2.1.4.jar" module-name="HomeCommandExtension" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../Server1.17.1/plugins/ImprovedFactions-BETAv4.0.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../Server1.17.1/spigot-1.17.1.jar" path-in-jar="/" />
+      <element id="library" level="module" name="spigot-1.17.1.jar" module-name="HomeCommandExtension" />
+    </root>
+  </artifact>
+</component>
