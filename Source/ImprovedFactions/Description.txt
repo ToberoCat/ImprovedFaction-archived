@@ -1,0 +1,10 @@
+USE     Validate.notNull(id, "UUID cannot be null");
+
+
+IF - Lite -> Empty for now
+Lite should be a version with NO admin GUIS (Config GUI, Backup GUI)
+No Backup system integradet (Downloadable though)
+Removes TimeCore
+
+IF - Default
+A download & work plugin version. Everything should set up it self
