@@ -1,4 +1,4 @@
-<h1 align="center">Improved Factions</h1>
+<a href="https://www.spigotmc.org/resources/improved-factions.95617/"><h1 align="center">Improved Factions</h1></a>
 <h3 align="center">A minecraft spigot plugin</h3>
 
 <h2 align="center">License - GNU Lesser General Public License v3.0</h2>
