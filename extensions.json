@@ -2,7 +2,7 @@
   "extensionObjects" : [ {
     "name" : "SettingsAndFlags",
     "description" : "§fThis extension is adding some flags and settings to the gui",
-    "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/SettingsAndFlags.jar?raw=true",
+    "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/SettingsAndFlags.jar?raw=true",
     "displayName" : "SettingsAndFlags",
     "version" : "3.0",
     "author" : "Tobero",
@@ -12,7 +12,7 @@
 }, {
   "name" : "ChatMessageExtension",
   "description" : "This extension is used if you want to display the faction the user is a part off. Example: [FactionName] Notch: Hello. This is an example",
-  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/ChatMessageExtension.jar?raw=true",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/ChatMessageExtension.jar?raw=true",
   "displayName" : "ChatMessageExtension",
   "version" : "3.0",
   "author" : "Tobero",
@@ -22,7 +22,7 @@
 }, {
   "name" : "HomeExtension",
   "description" : "This extension adds the ability to set a faction home. Every player with the faction home teleportation permission can get ther by using §7/f home",
-  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/HomeExtension.jar?raw=true",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/HomeExtension.jar?raw=true",
   "displayName" : "HomeExtension",
   "version" : "4.0",
   "author" : "Tobero",
@@ -32,7 +32,7 @@
 }, {
   "name" : "DynmapExtension",
   "description" : "§fDisplay the claimed faction chunks on the dynamp",
-  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/DynmapExtension.jar?raw=true",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/DynmapExtension.jar?raw=true",
   "displayName" : "DynmapExtension",
   "version" : "3.0",
   "author" : "Tobero",
@@ -42,7 +42,7 @@
 }, {
   "name" : "FlyCommandExtension",
   "description" : "§fAdd the /f fly command. You can fly in the claimed chunks",
-  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/FlyCommandExtension.jar?raw=true",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/FlyCommandExtension.jar?raw=true",
   "displayName" : "FlyCommandExtension",
   "version" : "1.0",
   "author" : "Tobero",
@@ -52,7 +52,7 @@
 }, {
   "name" : "MCoreConverter",
   "description" : "§fThis extension is for converting your massive core faction data to improvedFactions",
-  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/MCoreConverter.jar?raw=true",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/MCoreConverter.jar?raw=true",
   "displayName" : "MCoreConverter",
   "version" : "1.0",
   "author" : "Tobero",
