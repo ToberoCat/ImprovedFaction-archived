@@ -59,5 +59,15 @@
   "info" : "other infos to know",
   "requiresVersion" : [ "BETAv4.0.0" ],
   "dependencies" : null
+}, {
+  "name" : "MassClaim",
+  "description" : "§fThis extension allows a world-edit like claiming and unclaiming of chunks",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/MassClaim.jar?raw=true",
+  "displayName" : "MassClaim Extension",
+  "version" : "1.0",
+  "author" : "Tobero",
+  "info" : "other infos to know",
+  "requiresVersion" : [ "BETAv4.0.0" ],
+  "dependencies" : null
 }]
 }
