@@ -24,10 +24,10 @@
   "description" : "This extension adds the ability to set a faction home. Every player with the faction home teleportation permission can get ther by using §7/f home",
   "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/HomeExtension.jar?raw=true",
   "displayName" : "HomeExtension",
-  "version" : "4.0",
+  "version" : "5.0",
   "author" : "Tobero",
   "info" : "The home extension allows players to set a faction home and teleport to it.\n§7Commands: §f/f sethome and /f home",
-  "requiresVersion" : [ "BETAv4.0.0" ],
+  "requiresVersion" : [ "BETAv5.0.0" ],
   "dependencies" : null
 }, {
   "name" : "DynmapExtension",
