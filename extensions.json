@@ -69,5 +69,15 @@
   "info" : "other infos to know",
   "requiresVersion" : [ "BETAv4.0.0" ],
   "dependencies" : null
+}, {
+  "name" : "FactionEconomy",
+  "description" : "§fThis extension adds support for factions to have a bank. Needs vault & vaul economy bank supporting economy plugin",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/FactionEconomy.jar?raw=true",
+  "displayName" : "Faction economy Extension",
+  "version" : "1.0",
+  "author" : "Tobero",
+  "info" : "other infos to know",
+  "requiresVersion" : [ "BETAv5.0.1" ],
+  "dependencies" : [ "Vault" ]
 }]
 }
