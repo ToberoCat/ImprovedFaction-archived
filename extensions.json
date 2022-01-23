@@ -4,10 +4,10 @@
     "description" : "§fThis extension is adding some flags and settings to the gui",
     "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/SettingsAndFlags.jar?raw=true",
     "displayName" : "SettingsAndFlags",
-    "version" : "3.0",
+    "version" : "3.1",
     "author" : "Tobero",
     "info" : "other infos to know",
-    "requiresVersion" : [ "BETAv3.0.0", "BETAv4.0.0" ],
+    "requiresVersion" : [ "BETAv3.0.0", "BETAv4.0.0", "BETAv5.0.1" ],
     "dependencies" : null
 }, {
   "name" : "ChatMessageExtension",
