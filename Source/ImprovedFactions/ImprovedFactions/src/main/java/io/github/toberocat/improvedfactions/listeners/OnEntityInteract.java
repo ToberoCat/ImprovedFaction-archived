@@ -23,11 +23,6 @@ public class OnEntityInteract implements Listener {
             if (claimFaction == null)
                 return;
 
-            if (FactionUtils.getFaction(event.getPlayer()) == null) {
-                event.setCancelled(true);
-                return;
-            }
-
             if (!claimFaction.getRegistryName()
                     .equals(playerData.playerFaction.getRegistryName())) {
                 event.setCancelled(true);
@@ -43,11 +38,6 @@ public class OnEntityInteract implements Listener {
             Faction claimFaction = ChunkUtils.GetFactionClaimedChunk(event.getEntity().getLocation().getChunk());
                 if (claimFaction == null)
                     return;
-
-                if (FactionUtils.getFaction((Player) event.getRemover()) == null) {
-                    event.setCancelled(true);
-                    return;
-                }
 
                 if (!claimFaction.getRegistryName()
                         .equals(playerData.playerFaction.getRegistryName())) {

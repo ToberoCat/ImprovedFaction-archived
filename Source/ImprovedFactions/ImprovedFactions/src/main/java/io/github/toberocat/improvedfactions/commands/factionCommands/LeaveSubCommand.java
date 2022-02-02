@@ -24,13 +24,11 @@ public class LeaveSubCommand extends SubCommand {
         if (FactionUtils.getFaction(player) != null) {
             Faction faction = FactionUtils.getFaction(player);
 
-            if (!FactionUtils.getPlayerRank(faction, player).toString().equals(OwnerRank.registry)) {
-                FactionLeaveEvent leaveEvent = new FactionLeaveEvent(faction, player);
-                Bukkit.getPluginManager().callEvent(leaveEvent);
-                if (faction.Leave(player) && !leaveEvent.isCancelled())
+            boolean canLeave = faction.isPermanent() || !FactionUtils.getPlayerRank(faction, player).toString().equals(OwnerRank.registry);
+
+            if (canLeave) {
+                if (faction.Leave(player))
                     Language.sendMessage(LangMessage.LEAVE_SUCCESS, player, new Parseable("{faction_displayname}", faction.getDisplayName()));
-                else if (leaveEvent.isCancelled())
-                    Language.sendMessage(LangMessage.LEAVE_OWN_FACTION, player);
                 else
                     CommandExecuteError(CommandExecuteError.OtherError, player);
             } else {

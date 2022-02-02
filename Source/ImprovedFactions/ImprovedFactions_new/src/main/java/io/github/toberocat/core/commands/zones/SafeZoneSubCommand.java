@@ -16,7 +16,7 @@ public class SafeZoneSubCommand extends SubCommand {
 
     @Override
     protected void CommandExecute(Player player, String[] args) {
-        MainIF.getIF().getClaimManager().ProtectChunk(ClaimManager.SAFEZONE_REGISTRY, player.getLocation().getChunk());
+        MainIF.getIF().getClaimManager().protectChunk(ClaimManager.SAFEZONE_REGISTRY, player.getLocation().getChunk());
         Language.sendMessage(LangMessage.COMMAND_ZONES_SAFEZONE_CLAIM, player);
     }
 

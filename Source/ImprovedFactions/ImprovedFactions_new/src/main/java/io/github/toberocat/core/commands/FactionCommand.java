@@ -1,10 +1,12 @@
 package io.github.toberocat.core.commands;
 
-import io.github.toberocat.MainIF;
 import io.github.toberocat.core.commands.admin.AdminSubCommand;
 import io.github.toberocat.core.commands.config.ConfigSubCommand;
+import io.github.toberocat.core.commands.extension.ExtensionSubCommand;
 import io.github.toberocat.core.commands.factions.CreateFactionSubCommand;
 import io.github.toberocat.core.commands.factions.DeleteFactionSubCommand;
+import io.github.toberocat.core.commands.factions.claim.ClaimSubCommand;
+import io.github.toberocat.core.commands.factions.relation.RelationSubCommand;
 import io.github.toberocat.core.commands.plugin.PluginSubCommand;
 import io.github.toberocat.core.commands.settings.SettingsSubCommand;
 import io.github.toberocat.core.commands.zones.ZoneSubCommand;
@@ -12,18 +14,16 @@ import io.github.toberocat.core.utility.command.SubCommand;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public class FactionCommand implements TabExecutor {
 
-    public static List<SubCommand> subCommands = new ArrayList<SubCommand>();
+    public static List<SubCommand> subCommands = new ArrayList<>();
 
     public FactionCommand() {
         subCommands.add(new ConfigSubCommand());
@@ -34,6 +34,9 @@ public class FactionCommand implements TabExecutor {
         subCommands.add(new HelpSubCommand());
         subCommands.add(new AdminSubCommand());
         subCommands.add(new SettingsSubCommand());
+        subCommands.add(new ClaimSubCommand());
+        subCommands.add(new RelationSubCommand());
+        subCommands.add(new ExtensionSubCommand());
     }
 
     @Override
@@ -69,7 +72,7 @@ public class FactionCommand implements TabExecutor {
 
         if (arguments == null) return null;
 
-        List<String> results = new ArrayList<String>();
+        List<String> results = new ArrayList<>();
         for (String arg : args) {
             for (String a : arguments) {
                 if (a.toLowerCase().startsWith(arg.toLowerCase())) {

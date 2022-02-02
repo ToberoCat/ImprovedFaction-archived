@@ -1,6 +1,7 @@
 package io.github.toberocat.improvedfactions.event.faction;
 
 import io.github.toberocat.improvedfactions.factions.Faction;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -12,10 +13,10 @@ public class FactionLeaveEvent extends Event implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
 
     private Faction faction;
-    private Player player;
+    private OfflinePlayer player;
     private String cancelMessage = "";
 
-    public FactionLeaveEvent(Faction faction, Player player) {
+    public FactionLeaveEvent(Faction faction, OfflinePlayer player) {
         this.faction = faction;
         this.player = player;
     }
@@ -46,9 +47,14 @@ public class FactionLeaveEvent extends Event implements Cancellable {
         this.faction = faction;
     }
 
-    public Player getPlayer() {
+    public OfflinePlayer getPlayer() {
         return player;
     }
+
+    public void setPlayer(OfflinePlayer player) {
+        this.player = player;
+    }
+
     public void setPlayer(Player player) {
         this.player = player;
     }

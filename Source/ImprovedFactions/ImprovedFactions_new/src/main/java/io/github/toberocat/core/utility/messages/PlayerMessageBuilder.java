@@ -1,13 +1,8 @@
 package io.github.toberocat.core.utility.messages;
 
-import io.github.toberocat.core.utility.callbacks.Callback;
 import io.github.toberocat.core.utility.language.Language;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-
-import java.util.Arrays;
 
 
 public class PlayerMessageBuilder {

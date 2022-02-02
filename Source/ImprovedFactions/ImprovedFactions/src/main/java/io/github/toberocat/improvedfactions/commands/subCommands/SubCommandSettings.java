@@ -1,17 +1,12 @@
 package io.github.toberocat.improvedfactions.commands.subCommands;
 
-import io.github.toberocat.improvedfactions.commands.factionCommands.SettingsSubCommand;
 import io.github.toberocat.improvedfactions.event.FactionEvent;
-import io.github.toberocat.improvedfactions.event.faction.FactionCreateEvent;
 import io.github.toberocat.improvedfactions.factions.Faction;
 import io.github.toberocat.improvedfactions.factions.FactionUtils;
-import io.github.toberocat.improvedfactions.ranks.Rank;
 import io.github.toberocat.improvedfactions.utility.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 public class SubCommandSettings {
 

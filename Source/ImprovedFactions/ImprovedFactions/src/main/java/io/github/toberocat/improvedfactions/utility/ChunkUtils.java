@@ -5,9 +5,11 @@ import io.github.toberocat.improvedfactions.event.chunk.ChunkClaimEvent;
 import io.github.toberocat.improvedfactions.event.chunk.ChunkUnclaimEvent;
 import io.github.toberocat.improvedfactions.factions.Faction;
 import io.github.toberocat.improvedfactions.factions.FactionUtils;
+import io.github.toberocat.improvedfactions.language.Language;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
@@ -35,8 +37,16 @@ public class ChunkUtils {
     public static void UnClaimChunk(@NotNull Chunk chunk, @NotNull Faction faction, TCallback<ClaimStatus> callback) {
         PersistentDataContainer container = chunk.getPersistentDataContainer();
 
+        /*
+        if (!ImprovedFactionsMain.getPlugin().getConfig().getStringList("general.worlds").contains(chunk.getWorld().getName())) {
+            callback.Callback(new ClaimStatus(ClaimStatus.Status.NOT_ALLOWED_WORLD, null));
+            return;
+        }
+         */
+
         if (!container.has(FACTION_CLAIMED_KEY, PersistentDataType.STRING)) {
             callback.Callback(new ClaimStatus(ClaimStatus.Status.NOT_CLAIMED, null));
+            return;
         }
 
         Faction faction1 = GetFactionClaimedChunk(chunk);
@@ -72,11 +82,10 @@ public class ChunkUtils {
                             if (claimFaction == faction && chunk != chunk.getWorld().getChunkAt((int)neighbour.getX(), (int)neighbour.getY())) { //The chunk is not wildness and isn't a part of another faction
                                 openList.add(neighbour);
                             }
-
                     }
                 }
 
-                if (faction.getClaimedchunks() != closedList.size()+1) {
+                if (faction.getClaimedChunks() != closedList.size()+1) {
                     callback.Callback(new ClaimStatus(ClaimStatus.Status.NEED_CONNECTION, faction));
                 }
             }
@@ -88,15 +97,18 @@ public class ChunkUtils {
     }
 
     public static void ClaimChunk(@NotNull Chunk chunk, @NotNull Faction faction, TCallback<ClaimStatus> callback) {
-
         PersistentDataContainer container = chunk.getPersistentDataContainer();
 
-        if (container.has(FACTION_CLAIMED_KEY, PersistentDataType.STRING)) { //Chunk already claimed
-            Faction faction1 = GetFactionClaimedChunk(chunk);
-                callback.Callback(new ClaimStatus(ClaimStatus.Status.ALREADY_CLAIMED, faction1));
+        /*
+        if (!ImprovedFactionsMain.getPlugin().getConfig().getStringList("general.worlds").contains(chunk.getWorld().getName())) {
+            callback.Callback(new ClaimStatus(ClaimStatus.Status.NOT_ALLOWED_WORLD, null));
+            return;
         }
+         */
+
+        //<editor-fold desc="ConnectedChunks check">
         if (ImprovedFactionsMain.getPlugin().getConfig().getBoolean("general.connectedChunks")
-                && faction.getClaimedchunks() != 0) {
+                && faction.getClaimedChunks() != 0) {
             AtomicBoolean connected = new AtomicBoolean(false);
             for (Chunk neighbour : GetNeighbourChunks(chunk)) {
                 Faction chunkClaimedFaction = GetFactionClaimedChunk(neighbour);
@@ -110,12 +122,47 @@ public class ChunkUtils {
                     callback.Callback(new ClaimStatus(ClaimStatus.Status.NEED_CONNECTION, faction1));
             }
         }
+        //</editor-fold>
+
+        if (!canOverclaim(chunk, faction)) {
+            Faction faction1 = GetFactionClaimedChunk(chunk);
+            callback.Callback(new ClaimStatus(ClaimStatus.Status.ALREADY_CLAIMED, faction1));
+            return;
+        }
+
         container.set(FACTION_CLAIMED_KEY, PersistentDataType.STRING, faction.getRegistryName());
         AddChunk(chunk);
         Bukkit.getPluginManager().callEvent(new ChunkClaimEvent(chunk, faction));
         Faction faction1 = GetFactionClaimedChunk(chunk);
             callback.Callback(new ClaimStatus(ClaimStatus.Status.SUCCESS, faction1));
     }
+
+    private static boolean canOverclaim(Chunk chunk, Faction wantToClaimFaction) {
+        Faction faction = GetFactionClaimedChunk(chunk);
+
+        if (faction == null) return true;
+        if (faction.getRegistryName().equals(wantToClaimFaction.getRegistryName())) return false;
+
+        if (faction.getPowerManager().getPower() >= faction.getClaimedChunks()) return false;
+
+        if (!isCorner(chunk, wantToClaimFaction.getRegistryName())) return false;
+        for (Player player : FactionUtils.getPlayersOnline(faction)) {
+            player.sendMessage(Language.getPrefix() +
+                    Language.format("&6&lWarning: &e" +
+                            wantToClaimFaction.getDisplayName() + "&f claimed a chunk from your land!"));
+        }
+        return true;
+    }
+
+    private static boolean isCorner(Chunk chunk, String rg) {
+        Chunk[] neighbours = GetNeighbourChunks(chunk);
+        for (Chunk neighbour : neighbours) {
+            if (GetFactionClaimedChunk(neighbour) == null ||
+                    GetFactionClaimedChunk(chunk).getRegistryName().equals(rg)) return true;
+        }
+        return false;
+    }
+
     public static Vector2[] GetNeighbourChunks(Vector2 chunk) {
         Vector2[] neighbours = new Vector2[4];
 

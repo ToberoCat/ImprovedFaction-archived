@@ -34,7 +34,7 @@ public class JoinPrivateAdminSubCommand extends SubCommand {
                     return;
                 }
 
-                faction.Join(player, Rank.fromString(AdminRank.registry));
+                faction.JoinSilent(player, Rank.fromString(AdminRank.registry));
                 player.sendMessage(Language.getPrefix() + "§fYou successfully joined " + faction.getDisplayName() + " silently");
         } else {
             CommandExecuteError(CommandExecuteError.NotEnoughArgs, player);

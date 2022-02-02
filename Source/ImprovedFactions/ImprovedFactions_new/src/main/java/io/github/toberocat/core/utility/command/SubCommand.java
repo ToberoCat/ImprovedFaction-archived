@@ -1,11 +1,13 @@
 package io.github.toberocat.core.utility.command;
 
 import io.github.toberocat.MainIF;
+import io.github.toberocat.core.debug.Debugger;
 import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
 import io.github.toberocat.core.utility.language.Parseable;
 import io.github.toberocat.core.utility.messages.PlayerMessageBuilder;
+import io.github.toberocat.core.utility.settings.PlayerSettings;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.entity.Player;
 
@@ -17,12 +19,12 @@ public abstract class SubCommand {
 
     private static SubCommand lastSubCommand;
 
-    protected enum CommandExecuteError { NoPermission, NoFaction, NotEnoughArgs, OtherError, PlayerNotFound, OnlyAdminCommand, NoFactionPermission, NoFactionNeed };
+    protected enum CommandExecuteError { NoPermission, NoFaction, NotEnoughArgs, OtherError, PlayerNotFound, OnlyAdminCommand, NoFactionPermission, NoFactionNeed }
 
     protected final String subCommand;
-    protected final String permission;
     protected final String description;
     protected final boolean manager;
+    protected final String permission;
 
     protected abstract void CommandExecute(Player player, String[] args);
     protected abstract List<String> CommandTab(Player player, String[] args);
@@ -93,7 +95,7 @@ public abstract class SubCommand {
             }
         }
 
-        List<String> results = new ArrayList<String>();
+        List<String> results = new ArrayList<>();
         for (String arg : args) {
             for (String a : arguments) {
                 if (a.toLowerCase().startsWith(arg.toLowerCase())) {
@@ -102,7 +104,8 @@ public abstract class SubCommand {
             }
         }
 
-        if ((Boolean)MainIF.getConfigManager().getValue("general.commandDescriptions") && results.size() == 1) {
+        if (!(Boolean) PlayerSettings.getSettings(player.getUniqueId()).getPaired().getPlayerSetting()
+                .get("hideCommandDescription").getSelected() && results.size() == 1) {
             for (SubCommand command : subCommands) {
                 if  (results.contains(command.getSubCommand())) {
                     if (lastSubCommand != command) {
@@ -159,14 +162,10 @@ public abstract class SubCommand {
         AsyncCore.Run(() -> {
             if (getSettings().canExecute(this, player, args, true)) {
                 if (player != null) {
-                    if (player.hasPermission("faction.commands." + permission)) {
+                    if (Debugger.hasPermission(player, "faction.commands." + permission)) {
                         if (MainIF.getEconomy() == null) {
                             CommandExecute(player, args);
                         } else {
-                            if ((Boolean) MainIF.getConfigManager().getValue("general.allowNegativeBalance") && MainIF.getEconomy().getBalance(player) <= 0) {
-                                player.sendMessage(Language.getPrefix() + Language.format("&cCan't withdraw " + getCosts() + ", because else you would have a negative balance"));
-                                return null;
-                            }
                             EconomyResponse response = MainIF.getEconomy().withdrawPlayer(player, getCosts());
 
                             if (response.transactionSuccess()) {
@@ -192,30 +191,14 @@ public abstract class SubCommand {
     // * Callbacks
     public void SendCommandExecuteError(CommandExecuteError error, Player player) {
         switch (error) {
-            case NoPermission:
-                player.sendMessage(Language.getPrefix() + "§cYou don't have enough permissions to use this command. Permission: faction.commands." + permission);
-                break;
-            case NoFaction:
-                player.sendMessage(Language.getPrefix() + "§cYou need to be in a faction to use this command");
-                break;
-            case NotEnoughArgs:
-                player.sendMessage(Language.getPrefix() + "§cThis command needs more arguments. Please check the usage if you don't know what arguments");
-                break;
-            case OtherError:
-                player.sendMessage(Language.getPrefix() + "§cAn error occurred while running the "+subCommand+" command");
-                break;
-            case PlayerNotFound:
-                player.sendMessage(Language.getPrefix() + "§cCoudn't find player");
-                break;
-            case OnlyAdminCommand:
-                player.sendMessage(Language.getPrefix() + "§cYou need admin rights to execute this command");
-                break;
-            case NoFactionPermission:
-                player.sendMessage(Language.getPrefix() + "§cYou don't have enough permissions to use this command. If you think you should be allowed, ask a faction admin");
-                break;
-            case NoFactionNeed:
-                player.sendMessage(Language.getPrefix() + "§cYou don't need to be in a faction to use this command");
-                break;
+            case NoPermission -> player.sendMessage(Language.getPrefix() + "§cYou don't have enough permissions to use this command. Permission: faction.commands." + permission);
+            case NoFaction -> player.sendMessage(Language.getPrefix() + "§cYou need to be in a faction to use this command");
+            case NotEnoughArgs -> player.sendMessage(Language.getPrefix() + "§cThis command needs more arguments. Please check the usage if you don't know what arguments");
+            case OtherError -> player.sendMessage(Language.getPrefix() + "§cAn error occurred while running the " + subCommand + " command");
+            case PlayerNotFound -> player.sendMessage(Language.getPrefix() + "§cCoudn't find player");
+            case OnlyAdminCommand -> player.sendMessage(Language.getPrefix() + "§cYou need admin rights to execute this command");
+            case NoFactionPermission -> player.sendMessage(Language.getPrefix() + "§cYou don't have enough permissions to use this command. If you think you should be allowed, ask a faction admin");
+            case NoFactionNeed -> player.sendMessage(Language.getPrefix() + "§cYou don't need to be in a faction to use this command");
         }
     }
 
@@ -238,7 +221,7 @@ public abstract class SubCommand {
     }
 
     protected boolean CommandDisplayCondition(Player player, String[] args) {
-        if (player.hasPermission("faction.commands." + permission)) {
+        if (Debugger.hasPermission(player, "faction.commands." + permission)) {
             return getSettings().canDisplay(this, player, args, false);
         }
 

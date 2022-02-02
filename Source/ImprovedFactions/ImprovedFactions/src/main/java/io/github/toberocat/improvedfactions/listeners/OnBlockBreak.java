@@ -17,19 +17,14 @@ public class OnBlockBreak implements Listener {
         PlayerData playerData = ImprovedFactionsMain.playerData.get(event.getPlayer().getUniqueId());
 
         Faction claimFaction = ChunkUtils.GetFactionClaimedChunk(event.getBlock().getChunk());
-            if (claimFaction == null)
-                return;
+        if (claimFaction == null)
+            return;
 
-            if (FactionUtils.getFaction(event.getPlayer()) == null) {
-                event.setCancelled(true);
-                return;
-            }
-
-            if (!claimFaction.getRegistryName()
-                    .equals(playerData.playerFaction.getRegistryName())) {
-                event.setCancelled(true);
-            } else if (!claimFaction.hasPermission(event.getPlayer(), Faction.BREAK_PERMISSION)) {
-                event.setCancelled(true);
-            }
+        if (playerData.playerFaction != null && !claimFaction.getRegistryName()
+                .equals(playerData.playerFaction.getRegistryName())) {
+            event.setCancelled(true);
+        } else if (!claimFaction.hasPermission(event.getPlayer(), Faction.BREAK_PERMISSION)) {
+            event.setCancelled(true);
+        }
     }
 }

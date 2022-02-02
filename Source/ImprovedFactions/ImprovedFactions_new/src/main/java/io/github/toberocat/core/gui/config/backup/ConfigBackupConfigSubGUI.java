@@ -41,9 +41,7 @@ public class ConfigBackupConfigSubGUI extends Gui {
                 "Quit to this page and", "go back to last view" })) {
             @Override
             public void OnClick() {
-                MainIF.getIF().getServer().getScheduler().runTaskLater(MainIF.getIF(), () -> {
-                    new ConfigBackupGUI(player);
-                }, 1);
+                MainIF.getIF().getServer().getScheduler().runTaskLater(MainIF.getIF(), () -> new ConfigBackupGUI(player), 1);
             }
         }));
 
@@ -52,9 +50,7 @@ public class ConfigBackupConfigSubGUI extends Gui {
             AddSlot(MainIF.getConfigManager().getConfig(split[0]).getItemIcon(), () -> {
                 Inventory inv = Bukkit.createInventory(null, 54, Language.getMessage(LangMessage.GUI_BACKUP_CONFIG_TITLE, player) + " - " + config);
                 final Gui gui = new Gui(player, inv, new GUISettings().setQuitIcon(true));
-                gui.getSettings().setQuitCallback(() -> {
-                    new ConfigBackupConfigSubGUI(player, config, backup);
-                });
+                gui.getSettings().setQuitCallback(() -> new ConfigBackupConfigSubGUI(player, config, backup));
 
                 Config newConfig = MainIF.getConfigManager().getConfig(split[0]);
 

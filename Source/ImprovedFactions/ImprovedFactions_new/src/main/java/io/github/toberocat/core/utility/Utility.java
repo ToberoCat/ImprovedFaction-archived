@@ -1,18 +1,24 @@
 package io.github.toberocat.core.utility;
 
 import io.github.toberocat.MainIF;
-import io.github.toberocat.core.utility.callbacks.Callback;
 import io.github.toberocat.core.utility.callbacks.ExceptionCallback;
+import io.github.toberocat.core.utility.events.faction.FactionCreateEvent;
+import io.github.toberocat.core.utility.events.faction.FactionEvent;
+import io.github.toberocat.core.utility.events.faction.FactionEventCancelledable;
+import io.github.toberocat.core.utility.factions.Faction;
 import io.github.toberocat.core.utility.language.Language;
+import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 
 import java.io.File;
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class Utility {
 
@@ -86,8 +92,8 @@ public class Utility {
         if (lore != null) {
             List<String> formatLore = new ArrayList<>();
 
-            for (int i = 0; i < lore.length; i++) {
-                formatLore.add(Language.format(lore[i]));
+            for (String s : lore) {
+                formatLore.add(Language.format(s));
             }
 
             meta.setLore(formatLore);
@@ -119,14 +125,34 @@ public class Utility {
     }
 
     public static void run(ExceptionCallback cb) {
-        cb.Callback();
+        cb.callback();
     }
 
-    public static <T extends Enum<T>> List<String> enumValues(Class<T> enumType) {
-        LinkedList<String> linked = new LinkedList<>();
-        for (T c : enumType.getEnumConstants()) {
-            linked.add(c.name());
+
+    public static void except(Exception e) {
+        if (MainIF.getConfigManager().getValue("general.printStacktrace")) e.printStackTrace();
+        MainIF.getIF().SaveShutdown(e.getMessage());
+    }
+
+    public static String[] getNames(Class<? extends Enum<?>> e) {
+        return Arrays.stream(e.getEnumConstants()).map(Enum::name).toArray(String[]::new);
+    }
+
+    public static String removeNonDigits(final String str) {
+        if (str == null || str.length() == 0) {
+            return "";
         }
-        return linked;
+        return str.replaceAll("/[^0-9]/g", "");
+    }
+
+    public static List<String> wrapLines(String text, String prefix) {
+        String wrapped = WordUtils.wrap(text, MainIF.getConfigManager().getValue("gui.wrapLength"));
+        return Arrays.stream(wrapped.split("\n")).map(x -> prefix + x).collect(Collectors.toList());
+    }
+
+    public static synchronized  <T extends FactionEventCancelledable> boolean callEvent(T event) {
+        Bukkit.getScheduler().runTask(MainIF.getIF(), () -> Bukkit.getPluginManager().callEvent(event));
+
+        return !event.isCancelled();
     }
 }

@@ -86,7 +86,6 @@ public class ConfigManager {
     public Config getConfig(String path)
     {
         if (!plugin.getConfigMap().containsKey(path)) {
-            MainIF.getIF().SaveShutdown("&cThe plugin tried to access a not existing path. Path: &6" + path);
             return null;
         }
 

@@ -1,14 +1,13 @@
 package io.github.toberocat.core.utility.callbacks;
 
-import io.github.toberocat.MainIF;
+import io.github.toberocat.core.utility.Utility;
 
 public interface ExceptionCallback extends Callback {
-    default void Callback() {
+    default void callback() {
         try {
             ECallback();
         } catch (Exception e) {
-            if (MainIF.getConfigManager().getValue("general.printStacktrace")) e.printStackTrace();
-            MainIF.getIF().SaveShutdown(e.getMessage());
+            Utility.except(e);
         }
     }
     void ECallback() throws Exception;

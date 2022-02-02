@@ -107,10 +107,14 @@ public class LangMessage {
 
     public static final String THIS_COMMAND_DOES_NOT_EXIST = "command.not-exist";
 
+    public static final String TUTORIAL_DESCRIPTION = "tutorial";
+
     public static final String ADMIN_DESCRIPTION = "command.admin.description";
 
     public static final String ADMIN_DISBAND_DESCRIPTION = "command.admin.disband.description";
-
+    public static final String ADMIN_GPOWER_DESCRIPTION = "command.admin.gpower.description";
+    public static final String ADMIN_SAFEZONE_DESCRIPTION = "command.admin.safzone.description";
+    public static final String ADMIN_UNCLAIM_DESCRIPTION = "command.admin.unclaim.description";
     public static final String ADMIN_JOIN_DESCRIPTION = "command.admin.joinSilent.description";
 
     public static List<LangDefaultDataAddon> langDefaultDataAddons = new ArrayList<>();
@@ -140,7 +144,7 @@ public class LangMessage {
         messages.put(AUTO_UNCLAIM_DISABLED, "&c&lDisabled&r &fauto unclaim");
 
         messages.put(CLAIM_ONE_DESCRIPTION, "Claim single chunk");
-        messages.put(CLAIM_ONE_NO_POWER, "§cCan't claim anymore. Your faction's claim power is 0");
+        messages.put(CLAIM_ONE_NO_POWER, "§cCan't claim anymore. Your faction's claim (Power - claimed chunks) power smaller or equal to 0");
         messages.put(CLAIM_ONE_SUCCESS, "§aSuccessfully §fclaimed this chunk");
         messages.put(CLAIM_ONE_NOT_CONNECTED, "§cCan't claim a this chunk. It's not connected to the other claims");
         messages.put(CLAIM_ONE_ALREADY_PROPERTY, "§cThis chunk is already your property");
@@ -216,13 +220,36 @@ public class LangMessage {
 
         messages.put(VERSION_DESCRIPTION, "Shows the version currently installed");
 
-        messages.put(ADMIN_DESCRIPTION, "§fAccess admin options. §7This allows the access to all admin commands");
-
+        messages.put(ADMIN_GPOWER_DESCRIPTION, "§fGive power to a faction");
         messages.put(ADMIN_DISBAND_DESCRIPTION, "§fDelete any faction. §c§lWarning: §r§7This will kick all embers and remove it entirely");
-
-        messages.put(ADMIN_JOIN_DESCRIPTION, "§fJOins &f&lany&r faction silently. §7§lTipp: §7You are leaving your current faction and join any faction without letting anyone know, that you join");
+        messages.put(ADMIN_JOIN_DESCRIPTION, "§fJoins &f&lany&r faction silently. §7§lTipp: §7You are leaving your current faction and join any faction without letting anyone know, that you join");
+        messages.put(ADMIN_UNCLAIM_DESCRIPTION, "§fUnclaim ANY chunk. Even safezone. &6&lWarning:&f this will remove protection");
+        messages.put(ADMIN_SAFEZONE_DESCRIPTION, "§fClaim unclaimable land. Usefull when using worldguard or something else");
 
         messages.put(THIS_COMMAND_DOES_NOT_EXIST, "&cThis command doesn't exist");
+
+        messages.put(TUTORIAL_DESCRIPTION + ".0", "Welcome to Factions Plugin");
+        messages.put(TUTORIAL_DESCRIPTION + ".1", "This is an exciting mode for team battles");
+        messages.put(TUTORIAL_DESCRIPTION + ".2", "Alone, it will be quite difficult here, because " +
+                "the more players there are in the faction, the more territory you can hold under you!");
+        messages.put(TUTORIAL_DESCRIPTION + ".3", "Let's start with the /f help commands, here you can" +
+                " see a list of the main commands.");
+        messages.put(TUTORIAL_DESCRIPTION + ".4", "Now it's time to create your faction for this type" +
+                " /f create *Name of your faction*.");
+        messages.put(TUTORIAL_DESCRIPTION + ".5", "Initially, you are given 20 strength at the start." +
+                " We hope you didn't die somewhere along the way, but if so write /f power to see how" +
+                " much power you have. After all, it will be needed for private chunks.");
+        messages.put(TUTORIAL_DESCRIPTION + ".6", "Oh yes, to protect your resources you need private, " +
+                "for this write /f claim. You will lock one chunk of 16x16 blocks. The number of " +
+                "strength of all players is summed up in the faction, one private is 2 strength. " +
+                "Be careful if you lose power, then your enemies will be able to seize your territory!" +
+                " Who are at war with you! The meaning of this game is to find Allies and attack " +
+                "enemies together! Stock up on dynamite, after all. This is a way to get into the " +
+                "territory of your enemies, but be quick, because if they are afraid of you and " +
+                "leave the game like miserable rats, you will have 15 minutes to bomb their chests " +
+                "and steal resources, because then their lands will become invulnerable!");
+
+
 
         messages.put(INFO_DESCRIPTION, "&fGet a list of all your members + there ranks");
 

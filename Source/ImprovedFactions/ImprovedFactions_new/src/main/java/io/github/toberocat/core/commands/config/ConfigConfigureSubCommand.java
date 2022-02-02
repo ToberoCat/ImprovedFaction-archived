@@ -8,7 +8,6 @@ import io.github.toberocat.core.utility.language.LangMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 

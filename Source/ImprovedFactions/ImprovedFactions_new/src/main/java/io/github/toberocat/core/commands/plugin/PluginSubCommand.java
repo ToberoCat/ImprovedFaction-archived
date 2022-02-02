@@ -10,6 +10,7 @@ public class PluginSubCommand extends SubCommand {
     public PluginSubCommand() {
         super("plugin", LangMessage.COMMAND_PLUGIN_DESCRIPTION, true);
         subCommands.add(new PluginDisableSubCommand());
+        subCommands.add(new PluginStandbySubCommand());
     }
 
     @Override

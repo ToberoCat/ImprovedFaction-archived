@@ -30,35 +30,29 @@ public class JoinSubCommand extends SubCommand {
                 return;
             }
             Faction foundFaction = FactionUtils.getFactionByRegistry(args[0]);
-                if (foundFaction == null)
-                {
-                    Language.sendMessage(LangMessage.JOIN_ERROR_NO_FACTION_FOUND, player);
-                    return;
-                }
+            if (foundFaction == null)
+            {
+                Language.sendMessage(LangMessage.JOIN_ERROR_NO_FACTION_FOUND, player);
+                return;
+            }
 
-                if (!FlagUtils.CompareEnum(foundFaction.getSettings().getFlags().get(Faction.OPENTYPE_FLAG), Faction.OpenType.Public)) {
-                    Language.sendMessage(LangMessage.JOIN_ERROR_FACTION_PRIVATE, player);
-                    return;
-                }
+            if (!FlagUtils.CompareEnum(foundFaction.getSettings().getFlags().get(Faction.OPENTYPE_FLAG), Faction.OpenType.Public)) {
+                Language.sendMessage(LangMessage.JOIN_ERROR_FACTION_PRIVATE, player);
+                return;
+            }
 
-                if (foundFaction.getBannedPeople().contains(player.getUniqueId())) {
-                    Language.sendMessage(LangMessage.JOIN_ERROR_FACTION_BANNED, player);
-                    return;
-                }
+            if (foundFaction.getBannedPeople().contains(player.getUniqueId())) {
+                Language.sendMessage(LangMessage.JOIN_ERROR_FACTION_BANNED, player);
+                return;
+            }
 
-                FactionJoinEvent joinEvent = new FactionJoinEvent(foundFaction, player);
-                Bukkit.getPluginManager().callEvent(joinEvent);
-                if (foundFaction.Join(player, Rank.fromString(MemberRank.registry)) && !joinEvent.isCancelled()) {
-                    Language.sendMessage(LangMessage.JOIN_SUCCESS, player,
-                            new Parseable("{faction_displayname}", foundFaction.getDisplayName()));
-                } else {
-                    if (foundFaction.hasMaxMembers())
-                        Language.sendMessage(LangMessage.JOIN_FULL, player);
-                    else if (joinEvent.isCancelled())
-                        player.sendMessage(Language.getPrefix() + "§cCouldn't join. " + joinEvent.getCancelMessage());
-                    else
-                        CommandExecuteError(CommandExecuteError.OtherError, player);
-                }
+            if (foundFaction.Join(player, Rank.fromString(MemberRank.registry))) {
+                Language.sendMessage(LangMessage.JOIN_SUCCESS, player,
+                        new Parseable("{faction_displayname}", foundFaction.getDisplayName()));
+            } else {
+                if (foundFaction.hasMaxMembers())
+                    Language.sendMessage(LangMessage.JOIN_FULL, player);
+            }
         } else {
             player.sendMessage(Language.getPrefix() + "§cYou have already joined a faction. Please leave before joining another faction");
         }

@@ -1,6 +1,8 @@
 package io.github.toberocat.core.utility.factions.rank;
 
+import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
+import org.bukkit.entity.Player;
 
 public class NewMemberRank extends Rank {
     public static final String registry = "NewMember";
@@ -9,12 +11,7 @@ public class NewMemberRank extends Rank {
     }
 
     @Override
-    public String description(int line) {
-        if (line == 0) {
-            return Language.format("&8New members are people");
-        } else if (line == 1) {
-            return Language.format("&8who have joined your faction recently");
-        }
-        return "";
+    public String description(Player player) {
+        return Language.getMessage(LangMessage.RANK_NEWMEMBER_DESCRIPTION, player);
     }
 }

@@ -1,6 +1,5 @@
 package io.github.toberocat.core.utility.factions.power;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.toberocat.MainIF;
 import io.github.toberocat.core.utility.factions.Faction;
@@ -9,8 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
-
-import java.util.UUID;
 
 public class PowerManager {
     private int currentPower;
@@ -38,11 +35,29 @@ public class PowerManager {
         currentPower = Math.min(currentPower+amount, maxPower);
     }
 
-    public void AddFactionMember() {
+    public void addClaimedChunk() {
+
+    }
+
+    public void addFactionMember() {
         int powerPerPlayer = MainIF.getConfigManager().getValue("power.powerPerPlayer");
         currentPower += Math.min(currentPower, maxPower);
 
         //ToDo: Implement bossbar animation for power rising
+        if (MainIF.getConfigManager().getValue("power.bossbar")) {
+            /*
+            for (UUID playerUUID : faction.getOnlineMembers()) {
+                bossBar.addPlayer(Bukkit.getPlayer(playerUUID));
+            }
+             */
+        }
+    }
+
+    public void removeFactionMember() {
+        int powerPerPlayer = MainIF.getConfigManager().getValue("power.powerPerPlayer");
+        currentPower -= Math.min(currentPower, maxPower);
+
+        //ToDo: Implement bossbar animation for power sinking
         if (MainIF.getConfigManager().getValue("power.bossbar")) {
             /*
             for (UUID playerUUID : faction.getOnlineMembers()) {

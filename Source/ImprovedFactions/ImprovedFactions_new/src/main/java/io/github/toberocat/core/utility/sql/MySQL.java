@@ -1,5 +1,7 @@
 package io.github.toberocat.core.utility.sql;
 
+import io.github.toberocat.core.utility.Utility;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -32,8 +34,8 @@ public class MySQL {
 
         try {
             connection.close();
-        } catch (SQLException exception) {
-            exception.printStackTrace();
+        } catch (SQLException e) {
+            Utility.except(e);
         }
     }
 

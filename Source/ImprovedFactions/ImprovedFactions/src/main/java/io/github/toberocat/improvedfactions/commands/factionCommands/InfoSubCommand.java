@@ -26,11 +26,35 @@ public class InfoSubCommand extends SubCommand  {
     @Override
     protected void CommandExecute(Player player, String[] args) {
         Faction faction = FactionUtils.getFaction(player);
-        player.sendMessage(Language.getPrefix()  +"&e&l" + faction.getDisplayName() + " &finfos");
+        player.sendMessage(Language.getPrefix()  +"§e§l" + faction.getDisplayName()
+                + " §finfo. Current power: §b" +
+                faction.getPowerManager().getPower() + " / " + faction.getPowerManager().getMaxPower());
 
+        player.sendMessage(Language.getPrefix()+"§eAllies: §7" + faction.getRelationManager().getAllies().size());
+
+        for (String ally : faction.getRelationManager().getAllies()) {
+            player.sendMessage(Language.getPrefix() + Language.format("&f"+ ally + "&7 - "
+                    + FactionUtils.getFactionByRegistry(ally).getDisplayName()));
+        }
+
+        player.sendMessage(Language.getPrefix()+"§eWars: §7" + faction.getRelationManager().getEnemies().size());
+
+        for (String enemy : faction.getRelationManager().getEnemies()) {
+            player.sendMessage(Language.getPrefix() + Language.format("&f"+ enemy + "&7 - "
+                    + FactionUtils.getFactionByRegistry(enemy).getDisplayName()));
+        }
+
+        player.sendMessage(Language.getPrefix()+"§eInvites: §7" + faction.getRelationManager().getInvites().size());
+
+        for (String invite : faction.getRelationManager().getInvites()) {
+            player.sendMessage(Language.getPrefix() + Language.format("&f"+ invite + "&7 - "
+                    + FactionUtils.getFactionByRegistry(invite).getDisplayName()));
+        }
+
+        player.sendMessage(Language.getPrefix()+"Members: ");
         for (FactionMember member : faction.getMembers()) {
             if (member == null) continue;
-            player.sendMessage(Language.format(Bukkit.getOfflinePlayer("&e"+member.getUuid()).getName() + "&7 - &8" + member.getRank().getDisplayName()));
+            player.sendMessage(Language.getPrefix() + Language.format("&e"+Bukkit.getOfflinePlayer(member.getUuid()).getName() + "&7 - &8" + member.getRank().getDisplayName()));
         }
     }
 

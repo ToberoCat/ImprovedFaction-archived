@@ -4,6 +4,7 @@ package io.github.toberocat.core.utility;
  * This class is used to return messages next to a success boolean
  */
 public class Result<T> {
+
     private final boolean success;
     private String machineMessage;
     private String playerMessage;
@@ -48,6 +49,14 @@ public class Result<T> {
 
     public boolean isSuccess() {
         return success;
+    }
+
+    public static Result success() {
+        return new Result(true);
+    }
+
+    public static Result failure(String machineMessage, String playerMessage) {
+        return new Result(false).setMessages(machineMessage, playerMessage);
     }
 }
 

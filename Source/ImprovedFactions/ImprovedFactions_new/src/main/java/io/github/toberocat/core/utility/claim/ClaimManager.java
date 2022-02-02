@@ -1,12 +1,21 @@
 package io.github.toberocat.core.utility.claim;
 
+import io.github.toberocat.core.utility.data.DataAccess;
 import io.github.toberocat.core.utility.data.PersistentDataUtility;
+import io.github.toberocat.core.utility.dynamic.loaders.DynamicLoader;
 import io.github.toberocat.core.utility.factions.Faction;
 import io.github.toberocat.core.utility.Result;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 
-public class ClaimManager {
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+
+public class ClaimManager extends DynamicLoader<Player, Player> {
 
     public static final String SAFEZONE_REGISTRY = "__glb:safezone__";
     public static final String WARZONE_REGISTRY = "__glb:warzone__";
@@ -14,37 +23,92 @@ public class ClaimManager {
 
     public static final String UNCLAIMED_CHUNK_REGISTRY = "NONE";
 
-    public Result ClaimChunk(Faction faction, Chunk chunk) {
-        return ProtectChunk(faction.getRegistryName(), chunk);
-    }
+    public final Map<String, List<Dimension>> CLAIMS;
 
-    public Result ProtectChunk(String registry, Chunk chunk) {
-        if (PersistentDataUtility.Has(PersistentDataUtility.FACTION_CLAIMED_KEY,
-                PersistentDataType.STRING, chunk.getPersistentDataContainer())) {
-            return new Result(false).setMessages("CHUNK_ALREADY_PROTECTED", "&c&lHey!&f The chunk you want to claim got already claimed");
+    public ClaimManager() {
+        CLAIMS = new HashMap<>();
+
+        for (String world : DataAccess.listFiles("Chunks")) {
+            Dimension[] claims = DataAccess.getFile("Chunks", world, Dimension[].class);
+            if (claims == null) continue;
+
+            List<Dimension> targetList = Arrays.asList(claims);
+            CLAIMS.put(world, targetList);
         }
 
-        PersistentDataUtility.Write(PersistentDataUtility.FACTION_CLAIMED_KEY,
+        for (World world : Bukkit.getWorlds()) {
+            if (!CLAIMS.containsKey(world.getName())) {
+                CLAIMS.put(world.getName(), new ArrayList<>());
+            }
+        }
+
+        Subscribe(this);
+    }
+
+    @Override
+    protected void Disable() {
+        for (String world : CLAIMS.keySet()) {
+            DataAccess.addFile("Chunks", world, CLAIMS.get(world).toArray(Dimension[]::new));
+        }
+
+        CLAIMS.clear();
+    }
+
+    @Override
+    protected void Enable() {
+
+    }
+
+    public Result claimChunk(Faction faction, Chunk chunk) {
+        return protectChunk(faction.getRegistryName(), chunk);
+    }
+
+    public Result protectChunk(String registry, Chunk chunk) {
+        if (PersistentDataUtility.has(PersistentDataUtility.FACTION_CLAIMED_KEY,
+                PersistentDataType.STRING, chunk.getPersistentDataContainer())) {
+            return new Result(false).setMessages("CHUNK_ALREADY_PROTECTED", "&cThe chunk you want to claim got already claimed");
+        }
+
+        PersistentDataUtility.write(PersistentDataUtility.FACTION_CLAIMED_KEY,
                 PersistentDataType.STRING,
                 registry,
                 chunk.getPersistentDataContainer());
+
+        CLAIMS.get(chunk.getWorld().getName()).add(new Dimension(chunk.getX(), chunk.getZ()));
         return new Result(true);
     }
 
-    public Result<String> RemoveProtection(Chunk chunk) {
-        if (!PersistentDataUtility.Has(PersistentDataUtility.FACTION_CLAIMED_KEY,
+    public String getFactionRegistry(Chunk chunk) {
+        return PersistentDataUtility.read(PersistentDataUtility.FACTION_CLAIMED_KEY,
+                PersistentDataType.STRING,
+                chunk.getPersistentDataContainer());
+    }
+
+    public Result<String> removeProtection(Chunk chunk) {
+        if (!PersistentDataUtility.has(PersistentDataUtility.FACTION_CLAIMED_KEY,
                 PersistentDataType.STRING, chunk.getPersistentDataContainer())) {
             return  new Result(true);
         }
-        String claimRegistry = PersistentDataUtility.Read(PersistentDataUtility.FACTION_CLAIMED_KEY,
+        String claimRegistry = PersistentDataUtility.read(PersistentDataUtility.FACTION_CLAIMED_KEY,
                 PersistentDataType.STRING,
                 chunk.getPersistentDataContainer());
 
-        PersistentDataUtility.Write(PersistentDataUtility.FACTION_CLAIMED_KEY,
+        PersistentDataUtility.write(PersistentDataUtility.FACTION_CLAIMED_KEY,
                 PersistentDataType.STRING,
                 UNCLAIMED_CHUNK_REGISTRY,
                 chunk.getPersistentDataContainer());
 
+        CLAIMS.get(chunk.getWorld().getName()).remove(new Dimension(chunk.getX(), chunk.getZ()));
         return new Result<String>(true).setPaired(claimRegistry);
+    }
+
+    @Override
+    protected void loadPlayer(Player value) {
+
+    }
+
+    @Override
+    protected void unloadPlayer(Player value) {
+
     }
 }

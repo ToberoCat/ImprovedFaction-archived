@@ -1,9 +1,14 @@
 package io.github.toberocat;
 
 import io.github.toberocat.core.commands.FactionCommand;
+import io.github.toberocat.core.extensions.ExtensionObject;
 import io.github.toberocat.core.listeners.GuiListener;
 import io.github.toberocat.core.listeners.PlayerJoinListener;
 import io.github.toberocat.core.listeners.PlayerLeaveListener;
+import io.github.toberocat.core.listeners.PlayerMoveListener;
+import io.github.toberocat.core.utility.dynamic.loaders.DynamicLoader;
+import io.github.toberocat.core.utility.events.bukkit.PlayerJoinOnReloadEvent;
+import io.github.toberocat.core.utility.factions.FactionUtility;
 import io.github.toberocat.core.utility.Utility;
 import io.github.toberocat.core.utility.Result;
 import io.github.toberocat.core.utility.claim.ClaimManager;
@@ -17,7 +22,9 @@ import io.github.toberocat.core.utility.calender.TimeCore;
 import io.github.toberocat.core.utility.config.Config;
 import io.github.toberocat.core.utility.config.DataManager;
 import io.github.toberocat.core.utility.events.ConfigSaveEvent;
+import io.github.toberocat.core.utility.messages.MessageSystem;
 import io.github.toberocat.core.utility.settings.PlayerSettings;
+import io.github.toberocat.core.utility.version.Version;
 import io.github.toberocat.versions.nms.NMSFactory;
 import io.github.toberocat.versions.nms.NMSInterface;
 import net.milkbowl.vault.economy.Economy;
@@ -31,7 +38,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalTime;
@@ -48,7 +56,7 @@ public final class MainIF extends JavaPlugin {
     //<editor-fold desc="Variables">
     private static MainIF INSTANCE;
 
-    private static final String VERSION = "v1.0";
+    private static final Version VERSION = Version.from("1.0");
 
     private NMSInterface nms;
 
@@ -83,18 +91,15 @@ public final class MainIF extends JavaPlugin {
 
         LoadPluginDependencies();
 
-        configManager.AddToDefaultConfig("general.newestConfig", TimeCore.dateToString(TimeCore.getMachineDate()));
-
-        int[] time = TimeCore.dateStringToDate((String) configManager.getConfig("general.newestConfig").getValue());
-
-        if (time == null) {
-            SaveShutdown("&cLooks like someone tinkered with the &6general.newestConfig&c. Please set this value back to what is was, because this value should only be modified by the system");
-            return;
-        }
-
         FactionCommand command = new FactionCommand();
         getServer().getPluginCommand("faction").setExecutor(command);
         getServer().getPluginCommand("faction").setTabCompleter(command);
+
+        for (Player player : getServer().getOnlinePlayers()) {
+            Bukkit.getPluginManager().callEvent(new PlayerJoinOnReloadEvent(player));
+        }
+
+        DynamicLoader.enable();
     }
 
     /**
@@ -105,13 +110,12 @@ public final class MainIF extends JavaPlugin {
     public void onDisable() {
         SaveConfigs();
         DataAccess.disable();
+        DynamicLoader.disable();
 
         saveEvents.clear();
-        configMap.clear();
         backupFile.clear();
         dataManagers.clear();
-
-        Faction.unload();
+        configMap.clear();
 
         INSTANCE = null;
     }
@@ -157,7 +161,13 @@ public final class MainIF extends JavaPlugin {
      * @param message The message you want to get logged
      */
     public static void LogMessage(Level level, String message) {
-        ArrayList<String> values = configManager.getValue("debug.logLevel");
+        List<String> values = null;
+        if (!INSTANCE.isEnabled()) {
+            values = Arrays.asList("INFO", "WARNING", "SEVERE");
+        } else {
+            values = configManager.getValue("debug.logLevel");
+        }
+
         if (!values.contains(level.toString())) return;
 
         if (configManager.getValue("general.colorConsole")) {
@@ -288,11 +298,13 @@ public final class MainIF extends JavaPlugin {
 
         configManager.AddToDefaultConfig("general.prefix", "&e&lImprovedFactions", Utility.createItem(Material.NAME_TAG, "&e&lPrefix"));
         configManager.AddToDefaultConfig("general.printStacktrace", false, Utility.createItem(Material.YELLOW_DYE, "&e&lPrint Stacktrace"));
-        configManager.AddToDefaultConfig("general.timeFormat", "dd/MM/yyyy", Utility.createItem(Material.CLOCK, "&e&lTime format"));
         configManager.AddToDefaultConfig("general.commandDescriptions", true);
         configManager.AddToDefaultConfig("general.useSQL", false, Material.COBWEB, "&b&lUse sql",
                 "&8Sql is a database", "&8I would recommend to use it", "&8when you have a lot players", "&8on your server", "", "&6&lPerformance: &cHeavy");
         configManager.AddToDefaultConfig("general.colorConsole", true);
+        configManager.AddToDefaultConfig("general.debugMode", false, Material.COBWEB, "&b&lDebug mode",
+                "&8Get extra infos", "&8Usefull when debugging,", "&8or needing help by moderators");
+
         configManager.AddToDefaultConfig("gui.wrapLength", 20);
 
         configManager.AddToDefaultConfig("forbidden.checkFactionNames", true);
@@ -310,6 +322,11 @@ public final class MainIF extends JavaPlugin {
         configManager.AddToDefaultConfig("power.chunkPowerConsume", 3);
         configManager.AddToDefaultConfig("power.enabled", true);
 
+        configManager.AddToDefaultConfig("history.territoryChange", false);
+
+        configManager.AddToDefaultConfig("faction.configManager", false);
+        configManager.AddToDefaultConfig("faction.permanent", false);
+
         configManager.AddToDefaultConfig("commands.standby", new String[] { "tellraw @a {\"text\":\"Standby enabled\"}" }, Utility.createItem(Material.COMMAND_BLOCK, "&e&lStandyBy", new String[] {
                 "&8Write a list of commands", "&8That should get executed, when", "&8the plugin goes in standby mode"}));
         configManager.AddToDefaultConfig("commands.forbidden", new String[] { "tellraw @a {\"text\":\"This word, {word}, is maybe similar to {similar}. Used: {player_name}, {player_uuid} while {task}. {similarityPer}% similar \"}" }, Utility.createItem(Material.COMMAND_BLOCK, "&e&lForbidden name report", new String[] {
@@ -320,34 +337,23 @@ public final class MainIF extends JavaPlugin {
         getPluginManager().registerEvents(new PlayerJoinListener(), this);
         getPluginManager().registerEvents(new PlayerLeaveListener(), this);
         getPluginManager().registerEvents(new GuiListener(), this);
+        getPluginManager().registerEvents(new PlayerMoveListener(), this);
     }
 
     private boolean LoadPluginVersion() {
         String sVersion = Bukkit.getBukkitVersion();
-        if (sVersion.contains("1.18")) {
-            nms = NMSFactory.create_1_18();
-        } else if (sVersion.contains("1.17")) {
-            nms = NMSFactory.create_1_17();
-        } else if (sVersion.contains("1.16")) {
-            nms = NMSFactory.create_1_16();
-        } else if (sVersion.contains("1.15")) {
-            nms = NMSFactory.create_1_15();
-        } else if (sVersion.contains("1.14")) {
-            nms = NMSFactory.create_1_14();
-        } else if (sVersion.contains("1.13")) {
-            nms = NMSFactory.create_1_13();
+        for (String version : NMSFactory.versions) {
+            if (sVersion.contains(version)) {
+                nms = NMSFactory.create_1_18();
+                nms.EnableInterface();
+                return true;
+            }
         }
-
-        if (nms != null) {
-            nms.EnableInterface();
-            return true;
-        } else {
-            SaveShutdown("§cCouldn't load ImprovedFactions &6" + VERSION +
-                    "&c. The plugin didn't find a version for your server. Your server version: &6"
-                    + sVersion + "&c. Available versions: &6" + Arrays.toString(NMSFactory.versions));
-            getPluginManager().disablePlugin(this);
-            return false;
-        }
+        SaveShutdown("§cCouldn't load ImprovedFactions &6" + VERSION +
+                "&c. The plugin didn't find a version for your server. Your server version: &6"
+                + sVersion + "&c. Available versions: &6" + Arrays.toString(NMSFactory.versions));
+        getPluginManager().disablePlugin(this);
+        return false;
     }
 
     private void LoadPluginDependencies() {
@@ -355,9 +361,10 @@ public final class MainIF extends JavaPlugin {
             @Override
             public void run() {
                 if (!setupEconomy()) {
-                    LogMessage(Level.WARNING, Language.format("Disabled faction economy! Needs Vault and an Economy plugin installed to enable it"));
+                    LogMessage(Level.WARNING, "&eDisabled faction economy! Needs Vault and an Economy plugin" +
+                            " installed to enable it");
                 } else {
-                    LogMessage(Level.INFO, Language.format("Enabled faction economy"));
+                    LogMessage(Level.INFO, "&aEnabled faction economy");
                 }
             }
         }.runTaskLater(this, 0);
@@ -378,10 +385,11 @@ public final class MainIF extends JavaPlugin {
         if (!Language.init(this, getDataFolder())) return false;
         if (!TimeCore.init()) return false;
         if (!DataAccess.init()) return false;
-        if (!Faction.EnableFactions()) return false;
         if (!PlayerSettings.init()) return false;
 
         claimManager = new ClaimManager();
+        new FactionUtility();
+        new MessageSystem();
 
         return true;
     }
@@ -418,7 +426,6 @@ public final class MainIF extends JavaPlugin {
     /**
      * Get the economy for this plugin
      * The economy can be null, if Vault + A economy supoorting pluign (e.g.: Essentails) is not found
-     * @return
      */
     public static Economy getEconomy() {
         return economy;
@@ -452,7 +459,7 @@ public final class MainIF extends JavaPlugin {
      * Get the current plugin version
      * @return The version
      */
-    public static String getVERSION() {
+    public static Version getVersion() {
         return VERSION;
     }
 

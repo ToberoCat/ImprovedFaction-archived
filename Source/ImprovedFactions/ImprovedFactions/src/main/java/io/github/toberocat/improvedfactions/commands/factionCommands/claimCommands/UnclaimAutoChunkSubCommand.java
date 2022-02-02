@@ -22,18 +22,24 @@ public class UnclaimAutoChunkSubCommand extends SubCommand {
     protected void CommandExecute(Player player, String[] args) {
         if (FactionUtils.getFaction(player) != null) {
             if (autoUnclaim.contains(player.getUniqueId())) {
-                autoUnclaim.remove(player.getUniqueId());
+                disable(player);
             } else {
+                ClaimAutoChunkSubCommand.disable(player);
                 autoUnclaim.add(player.getUniqueId());
             }
             if (autoUnclaim.contains(player.getUniqueId())) {
                 Language.sendMessage(LangMessage.AUTO_UNCLAIM_ENABLED, player);
-            } else {
-                Language.sendMessage(LangMessage.AUTO_UNCLAIM_DISABLED, player);
             }
         } else {
             CommandExecuteError(CommandExecuteError.NoFaction, player);
         }
+    }
+
+    public static void disable(Player player) {
+        if (!autoUnclaim.contains(player.getUniqueId())) return;
+        autoUnclaim.remove(player.getUniqueId());
+        Language.sendMessage(LangMessage.AUTO_UNCLAIM_DISABLED, player);
+
     }
 
     @Override

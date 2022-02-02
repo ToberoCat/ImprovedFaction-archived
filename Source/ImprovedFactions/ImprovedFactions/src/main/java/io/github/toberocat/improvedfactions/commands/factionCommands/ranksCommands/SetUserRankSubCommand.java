@@ -7,6 +7,7 @@ import io.github.toberocat.improvedfactions.factions.FactionMember;
 import io.github.toberocat.improvedfactions.language.LangMessage;
 import io.github.toberocat.improvedfactions.language.Language;
 import io.github.toberocat.improvedfactions.language.Parseable;
+import io.github.toberocat.improvedfactions.ranks.OwnerRank;
 import io.github.toberocat.improvedfactions.ranks.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -26,7 +27,7 @@ public class SetUserRankSubCommand extends SubCommand {
         PlayerData data = ImprovedFactionsMain.playerData.get(player.getUniqueId());
         if (args.length == 2) {
             if (Bukkit.getPlayer(args[0]) != null) {
-                if (Rank.fromString(args[1]) != null) {
+                if (Rank.fromString(args[1]) != null && !args[0].equals(OwnerRank.registry)) {
                     Player p = Bukkit.getPlayer(args[0]);
                     data.playerFaction.SetRank(p, Rank.fromString(args[1]));
                     Language.sendMessage(LangMessage.RANK_SET_SUCCESS, player, new Parseable("{player}", p.getDisplayName()),
@@ -56,7 +57,9 @@ public class SetUserRankSubCommand extends SubCommand {
             }
         } else if (args.length == 2) {
             for (Rank rank : Rank.ranks) {
-                arguments.add(rank.toString());
+                if (!rank.getRegistryName().equals(OwnerRank.registry)) {
+                    arguments.add(rank.toString());
+                }
             }
         }
         return arguments;

@@ -4,8 +4,6 @@ import io.github.toberocat.core.listeners.GuiListener;
 import io.github.toberocat.core.utility.gui.page.Page;
 import io.github.toberocat.core.utility.gui.slot.Slot;
 import io.github.toberocat.core.utility.callbacks.Callback;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -14,7 +12,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -52,7 +49,7 @@ public class Gui {
         int lastCurrentPage = currentPage;
         currentPage = slots.get(currentPage).OnClick(event, currentPage, settings);
         if (currentPage == -1) {
-            settings.getQuitCallback().Callback();
+            settings.getQuitCallback().callback();
             currentPage = lastCurrentPage;
             return;
         }
@@ -73,7 +70,7 @@ public class Gui {
         if (slots.get(slots.size() - 1).AddSlot(new Slot(stack) {
             @Override
             public void OnClick() {
-                callback.Callback();
+                callback.callback();
             }
         })) {
            slots.add(new Page());
@@ -85,7 +82,7 @@ public class Gui {
         slots.get(page).AddSlot(new Slot(stack) {
             @Override
             public void OnClick() {
-                callback.Callback();
+                callback.callback();
             }
         }, slot);
         slots.get(currentPage).Render(currentPage, slots.size(), inventory, settings);

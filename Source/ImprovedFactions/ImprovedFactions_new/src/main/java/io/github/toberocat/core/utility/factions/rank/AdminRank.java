@@ -1,6 +1,7 @@
 package io.github.toberocat.core.utility.factions.rank;
 
 import io.github.toberocat.core.utility.Utility;
+import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,13 +14,8 @@ public class AdminRank extends Rank{
     }
 
     @Override
-    public String description(int line) {
-        if (line == 0) {
-            return Language.format("&8Admins have rights");
-        } else if (line == 1) {
-            return Language.format("&8to delete the faction");
-        }
-        return "";
+    public String description(Player player) {
+        return Language.getMessage(LangMessage.RANK_ADMIN_DESCRIPTION, player);
     }
 
     @Override

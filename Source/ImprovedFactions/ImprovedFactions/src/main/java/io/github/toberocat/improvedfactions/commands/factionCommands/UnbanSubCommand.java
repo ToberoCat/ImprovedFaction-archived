@@ -34,7 +34,7 @@ public class UnbanSubCommand extends SubCommand {
                 CommandExecuteError(CommandExecuteError.PlayerNotFound, player);
                 return;
             }
-            UUID uuid = player.getUniqueId();
+            UUID uuid = unbanned.getUniqueId();
             if (faction.getBannedPeople().contains(uuid)) {
                 faction.getBannedPeople().remove(uuid);
                 player.sendMessage(Language.getPrefix() + Language.format("Banned &e" + args[0]));

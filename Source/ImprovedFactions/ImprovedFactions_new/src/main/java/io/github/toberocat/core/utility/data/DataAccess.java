@@ -4,7 +4,9 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.github.toberocat.MainIF;
 import io.github.toberocat.core.utility.Utility;
+import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.json.JsonUtility;
+import io.github.toberocat.core.debug.Debugger;
 import io.github.toberocat.core.utility.sql.MySQL;
 
 import java.io.File;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -32,18 +35,31 @@ public class DataAccess {
             if (!sql.isConnected()) return false;
 
             MainIF.LogMessage(Level.INFO, "&aSuccessfully &fconnected to database");
-        } else {
-            String defPath = MainIF.getIF().getDataFolder().getPath() + "/";
-            Utility.mkdir(defPath + "Data/Factions");
-            Utility.mkdir(defPath + "Data/History");
-            Utility.mkdir(defPath + "Data/Chunks");
-            Utility.mkdir(defPath + "Data/Players");
-
         }
+
+        makeFolder("Factions");
+        makeFolder("History");
+        makeFolder("History/Territory");
+        makeFolder("Chunks");
+        makeFolder("Players");
+        makeFolder("Messages");
+
         return true;
     }
 
-    public static String getRawFile(String folder, String filename, Class clazz) {
+    public static AsyncCore makeFolder(String folder) {
+        if (sql != null) {
+            //ToDo: Add the method for creating tables in mySQL
+            return null;
+        } else {
+            return AsyncCore.Run(() -> {
+                String defPath = MainIF.getIF().getDataFolder().getPath() + "/";
+                Utility.mkdir(defPath + "Data/" + folder);
+            });
+        }
+    }
+
+    public static String getRawFile(String folder, String filename) {
         if (sql != null) {
             //ToDo: Add the method for storing the file in mySQL
             return "";
@@ -54,7 +70,7 @@ public class DataAccess {
             try {
                 return Files.asCharSource(file, Charsets.UTF_8).read();
             } catch (IOException e) {
-                e.printStackTrace();
+                Utility.except(e);
                 return null;
             }
         }
@@ -87,7 +103,7 @@ public class DataAccess {
         if (sql != null) sql.disconnect();
     }
 
-    public static <T> boolean AddFile(String folder, String filename, T object) {
+    public static <T> boolean addFile(String folder, String filename, T object) {
         if (sql != null) {
             //ToDo: Add the method for storing the file in mySQL
             return true;
@@ -99,6 +115,36 @@ public class DataAccess {
         }
     }
 
+    public static boolean removeFile(String folder, String filename) {
+        if (sql != null) {
+            //ToDo: Remove file in table
+            return true;
+        } else {
+            String filePath = MainIF.getIF().getDataFolder().getPath() + "/Data/" + folder + "/" + filename + ".json";
+            File file = new File(filePath);
+            return file.delete();
+        }
+    }
+
+    /**
+     * Raw file names. No .json removing
+     */
+    public static String[] listRawFiles(String folder) {
+        if (sql != null) {
+            // ToDO: Add method for sql table listing
+            return new String[] {""};
+        } else {
+            String filePath = MainIF.getIF().getDataFolder().getPath() + "/Data/" + folder;
+            File file = new File(filePath);
+
+            File[] listed = file.listFiles();
+            return Arrays.stream(listed).map(File::getName).toArray(String[]::new);
+        }
+    }
+
+    /**
+     * Raw file names. .json got removed
+     */
     public static String[] listFiles(String folder) {
         if (sql != null) {
             // ToDO: Add method for sql table listing
@@ -107,14 +153,8 @@ public class DataAccess {
             String filePath = MainIF.getIF().getDataFolder().getPath() + "/Data/" + folder;
             File file = new File(filePath);
 
-            File[] listed =file.listFiles();
-            String[] fileNames = new String[listed.length];
-
-            for (int i = 0; i < listed.length; i++) {
-                fileNames[i] = listed[i].getName();
-            }
-
-            return fileNames;
+            File[] listed = file.listFiles();
+            return Arrays.stream(listed).map(x -> x.getName().split("\\.")[0]).toArray(String[]::new);
         }
     }
 
@@ -125,6 +165,8 @@ public class DataAccess {
             String filePath = MainIF.getIF().getDataFolder().getPath() + "/Data/"
                     + folder + "/" + filename + ".json";
             File file = new File(filePath);
+
+            Debugger.log(file.exists()+"");
 
             return file.exists();
         }

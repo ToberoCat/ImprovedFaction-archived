@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public class ListBannedSubCommand extends SubCommand {
     public ListBannedSubCommand() {
-        super("listBanned", LangMessage.BANNED_LIST_DESCRIPTION);
+        super("banList", LangMessage.BANNED_LIST_DESCRIPTION);
     }
 
     @Override

@@ -14,6 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class PlayerSettingsGui extends Gui {
@@ -34,37 +35,37 @@ public class PlayerSettingsGui extends Gui {
         for (String key : result.getPaired().getPlayerSetting().keySet()) {
             Setting set = result.getPaired().getPlayerSetting().get(key);
             switch (set.getType()) {
-                case BOOL:
+                case BOOL -> {
                     String enabled = "&a";
                     String disabled = "&c";
                     if ((Boolean) set.getSelected()) enabled += "&n";
                     else disabled += "&n";
-
-                    AddSlot(Utility.createItem(set.getMaterial(), "&e"+key, new String[] {
+                    AddSlot(Utility.createItem(set.getMaterial(), "&e" + key, new String[]{
                             "&7Type: &eBoolean",
                             enabled + "enabled",
                             disabled + "disabled"
                     }), () -> {
-                        set.setSelected(!(Boolean)set.getSelected());
+                        set.setSelected(!(Boolean) set.getSelected());
                         slots.remove(currentPage);
                         slots.add(currentPage, new Page());
                         updateGui(player);
                     });
-                case ENUM:
-                    List<String> values = Utility.enumValues(set.getSelectedClass());
-                    String[] lore = new String[values.size()];
+                }
+                case ENUM -> {
+                    String[] values = set.getEnumValues();
+                    String[] lore = new String[values.length + 1];
                     lore[0] = "&7Type: &eSelector";
                     for (int i = 1; i < lore.length; i++) {
-                        lore[i] = (set.getSelected().toString().equals(values.get(i)) ? "&7&n" : "&7") +
-                                values.get(i);
+                        lore[i] = (set.getSelected().toString().equals(values[i - 1]) ? "&f" : "&7") +
+                                values[i - 1];
                     }
-
-                    AddSlot(Utility.createItem(set.getMaterial(), "&e"+key, lore), () -> {
-                        set.setSelected(values.get(getNextSelected(values, set)));
+                    AddSlot(Utility.createItem(set.getMaterial(), "&e" + key, lore), () -> {
+                        set.setSelected(values[getNextSelected(Arrays.asList(values), set)]);
                         slots.remove(currentPage);
                         slots.add(currentPage, new Page());
                         updateGui(player);
                     });
+                }
             }
         }
     }

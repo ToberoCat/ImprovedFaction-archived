@@ -1,27 +1,26 @@
 package io.github.toberocat.core.utility.factions;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.sun.tools.javac.Main;
 import io.github.toberocat.MainIF;
 import io.github.toberocat.core.utility.Result;
+import io.github.toberocat.core.utility.Utility;
 import io.github.toberocat.core.utility.async.AsyncCore;
-import io.github.toberocat.core.utility.config.Config;
 import io.github.toberocat.core.utility.data.DataAccess;
-import io.github.toberocat.core.utility.data.PersistentDataUtility;
 import io.github.toberocat.core.utility.events.ConfigSaveEvent;
+import io.github.toberocat.core.utility.events.faction.*;
 import io.github.toberocat.core.utility.factions.members.FactionMemberManager;
 import io.github.toberocat.core.utility.factions.power.PowerManager;
 import io.github.toberocat.core.utility.factions.rank.OwnerRank;
 import io.github.toberocat.core.utility.factions.rank.Rank;
-import io.github.toberocat.core.utility.json.JsonUtility;
+import io.github.toberocat.core.utility.factions.relation.RelationManager;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
 import io.github.toberocat.core.utility.language.Parseable;
+import io.github.toberocat.core.utility.messages.MessageSystem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
@@ -34,9 +33,11 @@ public class Faction {
 
     private PowerManager powerManager;
     private FactionMemberManager factionMemberManager;
+    private RelationManager relationManager;
 
     private OpenType openType;
     private String displayName, registryName;
+    private boolean frozen, permanent;
 
     public static Result<Faction> CreateFaction(String displayName, Player owner) {
         String registryName = ChatColor.stripColor(displayName.replaceAll("[^a-zA-Z0-9]", " "));
@@ -92,152 +93,130 @@ public class Faction {
             if (!result.isSuccess()) return result;
         }
         Faction newFaction = new Faction(displayName, registryName, OpenType.PUBLIC);
-        newFaction.Join(owner, Rank.fromString(OwnerRank.registry));
+        boolean canCreate = Utility.callEvent(new FactionCreateEvent(newFaction, owner));
+        if (!canCreate) {
+            DataAccess.removeFile("Factions", registryName);
+
+            return new Result<Faction>(false).setMessages("EVENT_CANCEL",
+                    "Couldn't create your faction");
+        }
 
         LOADED_FACTIONS.put(registryName, newFaction);
-        return new Result<Faction>(true).setPaired(newFaction);
+        Result result = newFaction.join(owner, Rank.fromString(OwnerRank.registry));
+
+        if (!result.isSuccess()) {
+            newFaction.delete();
+        }
+
+        return result.setPaired(newFaction);
     }
 
     /**
      * Don't use this. iT's for jackson (json).
      */
     public Faction() {
-
     }
 
     private Faction(String displayName, String registryName, OpenType openType) {
+        super();
         this.openType = openType;
         this.registryName = registryName;
         this.displayName = displayName;
         this.powerManager = new PowerManager(this,
                MainIF.getConfigManager().getValue("power.maxDefaultFaction"));
         this.factionMemberManager = new FactionMemberManager(this);
+        this.relationManager = new RelationManager(this);
+        this.frozen = false;
+        this.permanent = MainIF.getConfigManager().getValue("faction.permanent");
     }
 
-    public void Join(Player player, Rank rank) {
+    /**
+     * Let a player join a faction
+     * @param player
+     * @param rank
+     * @return
+     */
+    public Result join(Player player, Rank rank) {
+        if (frozen) return Result.failure("FROZEN", "This faction is frozen. You can't join");
 
+        boolean canJoin = Utility.callEvent(new FactionJoinEvent(this, player));
+        if (!canJoin)  return Result.failure("EVENT_CANCEL",
+                "Couldn't join faction");
+
+        return factionMemberManager.join(player);
     }
 
-    public boolean Leave(UUID member) {
-        OfflinePlayer ofPlayer = Bukkit.getOfflinePlayer(member);
-        if (ofPlayer.isOnline()) {
-            Player player = ofPlayer.getPlayer();
-            PersistentDataUtility.Write(PersistentDataUtility.PLAYER_FACTION_REGISTRY,
-                    PersistentDataType.STRING, null,
-                    player.getPersistentDataContainer());
-            Language.sendMessage(LangMessage.FACTION_LEAVE_SUCCESS, player,
-                    new Parseable("faction_display", displayName));
+    public Result leave(Player player) {
+        if (frozen) return Result.failure("FROZEN", "This faction is frozen. You can't leave");
+
+        boolean canLeave = Utility.callEvent(new FactionLeaveEvent(this, player));
+        if (!canLeave)  return Result.failure("EVENT_CANCEL",
+                "Couldn't leave your faction");
+
+        Language.sendMessage(LangMessage.COMMAND_FACTION_LEAVE_SUCCESS, player);
+
+        return factionMemberManager.leave(player);
+    }
+
+    public Result kick(OfflinePlayer player) {
+        if (frozen) return Result.failure("FROZEN", "This faction is frozen. You can't kick");
+
+        boolean canKick = Utility.callEvent(new FactionKickEvent(this, player));
+        if (!canKick)  return Result.failure("EVENT_CANCEL",
+                "Couldn't kick §e" + player.getName());
+
+        if (player.isOnline()) {
+            Language.sendMessage(LangMessage.FACTION_KICKED, player.getPlayer());
         } else {
-            //ToDo: Leave offline player
-        }
-        return true;
-    }
-
-
-    /**
-     * Get if the plugin finds a file with the registry name
-     * Use to check if a faction exists, but isn't loaded
-     * @param registry The registry name the faction should be known of
-     * @return True if a file with the registryName exists in ImprovedFactions/Data/Factions
-     */
-    public static boolean isFactionRegistryInStorage(String registry) {
-        return Arrays.asList(DataAccess.listFiles("Factions")).contains(registry);
-    }
-
-
-    /**
-     * Get if the plugin finds a file with the registry name
-     * Use to check if a faction exists, but isn't loaded
-     * @param display The registry name the faction should be known of
-     * @return True if a file with the registryName exists in ImprovedFactions/Data/Factions
-     */
-    public static boolean isFactionDisplayInStorage(String display) {
-        String registry = factionDisplayToRegistry(display);
-        return isFactionRegistryInStorage(registry);
-    }
-
-    public static boolean Delete(Faction faction) {
-        for (UUID member : getAllMembers(faction)) {
-            faction.Leave(member);
-        }
-        LOADED_FACTIONS.remove(faction.getRegistryName());
-        return true;
-    }
-
-    public static boolean hasFactionByDisplayName(String displayName) {
-        String registryName = factionDisplayToRegistry(displayName);
-        return LOADED_FACTIONS.containsKey(registryName);
-    }
-
-    public static boolean hasFactionByRegistry(String registryName) {
-        return LOADED_FACTIONS.containsKey(registryName);
-    }
-
-    public static Faction getFactionByRegistry(String registryName) {
-        return LOADED_FACTIONS.get(registryName);
-    }
-
-    public static Faction getFactionByDisplayName(String displayName) {
-        String registryName = factionDisplayToRegistry(displayName);
-        return LOADED_FACTIONS.get(registryName);
-    }
-
-    public static List<UUID> getAllMembers(Faction faction) {
-        String loadedFaction = DataAccess.getRawFile("Factions", faction.getRegistryName(),
-                Faction.class);
-
-        //ToDo: Get faction members from rawData
-        return null;
-    }
-
-    public static void unload() {
-        LOADED_FACTIONS.clear();
-    }
-
-    public static String factionDisplayToRegistry(String displayName) {
-        return  ChatColor.stripColor(displayName.replaceAll("[^a-zA-Z0-9]", " "));
-    }
-
-    public static boolean EnableFactions() {
-
-        for (String file : DataAccess.listFiles("Factions")) {
-            Faction faction = DataAccess.getFile("Factions", file.split("\\.")[0], Faction.class);
-            if (faction == null) return false;
-            faction.getFactionMemberManager().setFaction(faction);
-            faction.getPowerManager().setFaction(faction);
+            MessageSystem.sendMessage(player.getUniqueId(), Language.getMessage(LangMessage.FACTION_KICKED, "en_us"));
         }
 
-        MainIF.getIF().getSaveEvents().add(new ConfigSaveEvent() {
-            @Override
-            public SaveType isSingleCall() {
-                return SaveType.DataAccess;
+        return factionMemberManager.kick(player.getUniqueId());
+    }
+
+    public Result ban(OfflinePlayer player) {
+        if (frozen) return Result.failure("FROZEN", "This faction is frozen. You can't ban");
+
+        boolean canKick = Utility.callEvent(new FactionBanEvent(this, player));
+        if (!canKick)  return Result.failure("EVENT_CANCEL",
+                "Couldn't ban §e" + player.getName());
+
+        if (player.isOnline()) {
+            Language.sendMessage(LangMessage.FACTION_KICKED, player.getPlayer());
+        } else {
+            MessageSystem.sendMessage(player.getUniqueId(), Language.getMessage(LangMessage.FACTION_KICKED, "en_us"));
+        }
+
+        return factionMemberManager.ban(player.getUniqueId());
+    }
+
+    public Result unban(OfflinePlayer player) {
+        if (frozen) return Result.failure("FROZEN", "This faction is frozen. You can't unban");
+
+        boolean canKick = Utility.callEvent(new FactionUnbanEvent(this, player));
+        if (!canKick)  return Result.failure("EVENT_CANCEL",
+                "Couldn't unban §e" + player.getName());
+
+        return factionMemberManager.pardon(player.getUniqueId());
+    }
+
+    public void delete() {
+        AsyncCore.Run(() -> {
+            boolean canDelete = Utility.callEvent(new FactionDeleteEvent(this));
+            if (!canDelete) return;
+
+            for (UUID member : factionMemberManager.getMembers()) {
+                kick(Bukkit.getOfflinePlayer(member));
             }
-
-            @Override
-            public Result SaveDataAccess() {
-                for (Faction faction : LOADED_FACTIONS.values()) {
-                    DataAccess.AddFile("Factions", faction.getRegistryName(), faction);
-                }
-
-                return new Result<>(true).setMachineMessage("Factions/*.json");
-            }
+            LOADED_FACTIONS.remove(registryName);
+            DataAccess.removeFile("Factions", registryName);
         });
-        return true;
-    }
-
-    public static List<String> getAllFactions() {
-        LinkedList<String> list = new LinkedList<>();
-        for (String str : DataAccess.listFiles("Factions")) {
-            list.add(str.split("\\.")[0]);
-        }
-        return list;
-    }
-
-    public static Map<String, Faction> getLoadedFactions() {
-        return LOADED_FACTIONS;
     }
 
     //<editor-fold desc="Getters and Setters">
+    public static Map<String, Faction> getLoadedFactions() {
+        return LOADED_FACTIONS;
+    }
     public OpenType getOpenType() {
         return openType;
     }
@@ -277,6 +256,30 @@ public class Faction {
     public Faction setFactionMemberManager(FactionMemberManager factionMemberManager) {
         this.factionMemberManager = factionMemberManager;
         return this;
+    }
+
+    public RelationManager getRelationManager() {
+        return relationManager;
+    }
+
+    public void setRelationManager(RelationManager relationManager) {
+        this.relationManager = relationManager;
+    }
+
+    public boolean isFrozen() {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen) {
+        this.frozen = frozen;
+    }
+
+    public boolean isPermanent() {
+        return permanent;
+    }
+
+    public void setPermanent(boolean permanent) {
+        this.permanent = permanent;
     }
 
     //</editor-fold>

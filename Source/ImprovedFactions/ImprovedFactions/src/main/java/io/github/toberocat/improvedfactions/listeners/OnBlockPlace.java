@@ -20,12 +20,7 @@ public class OnBlockPlace implements Listener {
             if (claimFaction == null)
                 return;
 
-            if (FactionUtils.getFaction(event.getPlayer()) == null) {
-                event.setCancelled(true);
-                return;
-            }
-
-            if (!claimFaction.getRegistryName()
+            if (playerData.playerFaction != null && !claimFaction.getRegistryName()
                     .equals(playerData.playerFaction.getRegistryName())) {
                 event.setCancelled(true);
             } else if (!claimFaction.hasPermission(event.getPlayer(), Faction.BUILD_PERMISSION)) {

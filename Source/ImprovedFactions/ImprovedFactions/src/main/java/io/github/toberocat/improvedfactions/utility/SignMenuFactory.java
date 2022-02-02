@@ -114,6 +114,7 @@ public final class SignMenuFactory {
             NbtCompound signNBT = (NbtCompound) signData.getNbtModifier().read(0);
 
             for (int line = 0; line < SIGN_LINES; line++) {
+                System.out.println((this.text.size() > line) + ", " + text.size() + ", " + line);
                 signNBT.put("Text" + (line + 1), this.text.size() > line ? String.format(NBT_FORMAT, color(this.text.get(line))) : "");
             }
 

@@ -1,7 +1,6 @@
 package io.github.toberocat.improvedfactions.commands.factionCommands;
 
-import io.github.toberocat.improvedfactions.commands.factionCommands.adminSubCommands.DisbandFactionCommand;
-import io.github.toberocat.improvedfactions.commands.factionCommands.adminSubCommands.JoinPrivateAdminSubCommand;
+import io.github.toberocat.improvedfactions.commands.factionCommands.adminSubCommands.*;
 import io.github.toberocat.improvedfactions.commands.subCommands.SubCommand;
 import io.github.toberocat.improvedfactions.language.LangMessage;
 import io.github.toberocat.improvedfactions.language.Language;
@@ -12,13 +11,24 @@ import java.util.List;
 
 public class AdminSubCommand extends SubCommand {
 
-    public List<SubCommand> subCommands;
+    public static List<SubCommand> subCommands = new ArrayList<>();;
 
     public AdminSubCommand() {
         super("admin", LangMessage.ADMIN_DESCRIPTION);
-        subCommands = new ArrayList<>();
         subCommands.add(new DisbandFactionCommand());
         subCommands.add(new JoinPrivateAdminSubCommand());
+        subCommands.add(new GPowerSubCommand());
+        subCommands.add(new UUnclaimSubCommand());
+        subCommands.add(new SafezoneSubCommand());
+        subCommands.add(new FonlineSubCommand());
+        subCommands.add(new ViewReportsSubCommand());
+        subCommands.add(new RenameSubCommand());
+        subCommands.add(new ForceJoin());
+        subCommands.add(new RemoveReport());
+        subCommands.add(new ClearReports());
+        subCommands.add(new FrozeAdminCommand());
+        subCommands.add(new Permanent());
+
     }
 
 

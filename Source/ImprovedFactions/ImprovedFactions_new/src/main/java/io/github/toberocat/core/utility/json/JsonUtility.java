@@ -1,7 +1,7 @@
 package io.github.toberocat.core.utility.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.toberocat.MainIF;
+import io.github.toberocat.core.utility.Utility;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,8 +16,8 @@ public class JsonUtility {
             om.writerWithDefaultPrettyPrinter().writeValue(file, object);
             return true;
         } catch (IOException e) {
-            if (MainIF.getConfigManager().getValue("general.printStacktrace")) e.printStackTrace();
-            MainIF.getIF().SaveShutdown(e.getMessage());            return false;
+            Utility.except(e);
+            return false;
         }
     }
 
@@ -25,8 +25,7 @@ public class JsonUtility {
         try {
             return om.writeValueAsString(object);
         } catch (IOException e) {
-            if (MainIF.getConfigManager().getValue("general.printStacktrace")) e.printStackTrace();
-            MainIF.getIF().SaveShutdown(e.getMessage());
+            Utility.except(e);
             return "";
         }
     }
@@ -35,8 +34,7 @@ public class JsonUtility {
         try {
             return om.readValue(object, clazz);
         } catch (IOException e) {
-            if (MainIF.getConfigManager().getValue("general.printStacktrace")) e.printStackTrace();
-            MainIF.getIF().SaveShutdown(e.getMessage());
+            Utility.except(e);
         }
         return null;
     }
@@ -44,8 +42,7 @@ public class JsonUtility {
         try {
             return om.readValue(file, clazz);
         } catch (IOException e) {
-            if (MainIF.getConfigManager().getValue("general.printStacktrace")) e.printStackTrace();
-            MainIF.getIF().SaveShutdown(e.getMessage());
+            Utility.except(e);
         }
         return null;
     }
@@ -54,8 +51,7 @@ public class JsonUtility {
         try {
             return om.readValue(url, clazz);
         } catch (IOException e) {
-            if (MainIF.getConfigManager().getValue("general.printStacktrace")) e.printStackTrace();
-            MainIF.getIF().SaveShutdown(e.getMessage());
+            Utility.except(e);
         }
         return null;
     }

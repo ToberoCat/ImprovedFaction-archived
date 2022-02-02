@@ -1,9 +1,7 @@
 package io.github.toberocat.improvedfactions.ranks;
 
-import io.github.toberocat.improvedfactions.language.LangMessage;
 import io.github.toberocat.improvedfactions.language.Language;
 import io.github.toberocat.improvedfactions.utility.Utils;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class AdminRank extends Rank{

@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bukkit.Material;
 
 public class Setting<T> {
-    public enum SettingsType { BOOL, ENUM }
+    public enum SettingsType { BOOL, ENUM, NOT_LISTED }
 
-    private Class<T> selectedClass;
+    private String[] enumValues;
     private T selected;
     private SettingsType type;
     private Material material;
@@ -27,7 +27,7 @@ public class Setting<T> {
     public SettingsType getType() {
         return type;
     }
-    @JsonIgnore
+
     public T getSelected() {
         return selected;
     }
@@ -47,12 +47,13 @@ public class Setting<T> {
     }
 
     @JsonIgnore
-    public Class<T> getSelectedClass() {
-        return selectedClass;
+    public String[] getEnumValues() {
+        return enumValues;
     }
 
     @JsonIgnore
-    public void setSelectedClass(Class<T> selectedClass) {
-        this.selectedClass = selectedClass;
+    public Setting<T> setEnumValues(String[] enumValues) {
+        this.enumValues = enumValues;
+        return this;
     }
 }

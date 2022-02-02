@@ -43,6 +43,8 @@ public class InviteSubCommand extends SubCommand {
                                 }));
                         textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/f join" + JoinPrivateFactionSubCommand.joinUUID + " " + faction.getRegistryName()));
                         textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Language.getMessage(LangMessage.INVITE_HOVER_EVENT, playerToInvite)).create()));
+                        ImprovedFactionsMain.playerData.get(playerToInvite.getUniqueId())
+                                .invitations.add(faction.getRegistryName());
                         playerToInvite.spigot().sendMessage(textComponent);
                     } else {
                         CommandExecuteError(CommandExecuteError.PlayerNotFound, player);

@@ -36,6 +36,19 @@ public class Language {
         }
     }
 
+    public static boolean hasMessage(String msgKey, Player player) {
+        String locale = player.getLocale();
+        if (langFiles.containsKey(locale)) {
+            LangMessage langMessage = langFiles.get(locale);
+
+            return langMessage.getMessages().containsKey(msgKey);
+        } else {
+            LangMessage langMessage = langFiles.get("en_us");
+
+            return langMessage.getMessages().containsKey(msgKey);
+        }
+    }
+
     public static String getMessage(String msgKey, Player player) {
         String locale = player.getLocale();
         if (langFiles.containsKey(locale)) {
@@ -61,8 +74,6 @@ public class Language {
 
         if (langMessage.getMessages().containsKey(msgKey)) {
             player.sendMessage(getPrefix() + format(parse(langMessage.getMessages().get(msgKey), parseables)));
-        } else {
-            player.sendMessage(getPrefix() + format("&cThere went something wrong. If this happens more than two times, please report it to an admin. Error: NoLocalizationFound"));
         }
     }
 
@@ -79,7 +90,7 @@ public class Language {
 
     public static String getPrefix() {
         return format(ImprovedFactionsMain.getPlugin()
-                        .getLanguageData().getConfig().getString("prefix") + " ");
+                        .getLanguageData().getConfig().getString("prefix") + " §f");
     }
 
     public static String format(String msg) {

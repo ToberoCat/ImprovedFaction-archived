@@ -19,6 +19,14 @@ public class ObjectPair<T, E> {
         this.second = second;
     }
 
+    public synchronized void setT(T first) {
+        this.first = first;
+    }
+
+    public synchronized void setE(T first) {
+        this.first = first;
+    }
+
     /**
      * Get the first type
      * @return The t type set

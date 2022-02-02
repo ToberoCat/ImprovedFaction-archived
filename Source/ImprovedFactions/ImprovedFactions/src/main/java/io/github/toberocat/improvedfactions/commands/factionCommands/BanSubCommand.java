@@ -36,7 +36,7 @@ public class BanSubCommand extends SubCommand {
                 CommandExecuteError(CommandExecuteError.PlayerNotFound, player);
                 return;
             }
-            UUID uuid = player.getUniqueId();
+            UUID uuid = banned.getUniqueId();
             if (!faction.getBannedPeople().contains(uuid)) {
                 faction.getBannedPeople().add(uuid);
                 Language.sendMessage(LangMessage.BANNED_PLAYER_COMMAND_SUCCESS, player,

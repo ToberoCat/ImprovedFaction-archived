@@ -7,8 +7,6 @@ import io.github.toberocat.versions.v1_16.NMSLoader_1_16;
 import io.github.toberocat.versions.v1_17.NMSLoader_1_17;
 import io.github.toberocat.versions.v1_18.NMSLoader_1_18;
 
-import java.util.List;
-
 /**
  * This allows the plugin to load different version for different minecraft versions
  */
@@ -16,7 +14,7 @@ public class NMSFactory {
     /**
      * A list of all mc versions that are represented in this version
      */
-    public static String[] versions = new String[] {"1.18.x", "1.17.x", "1.16.x", "1.15.x", "1.14.x", "1.13.x"};
+    public static String[] versions = new String[] {"1.18", "1.17", "1.16", "1.15", "1.14", "1.13"};
 
     public static NMSInterface create_1_18() { return new NMSLoader_1_18(); }
     public static NMSInterface create_1_17() {

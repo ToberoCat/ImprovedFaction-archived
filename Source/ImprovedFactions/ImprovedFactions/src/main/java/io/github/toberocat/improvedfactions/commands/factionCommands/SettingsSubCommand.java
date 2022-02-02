@@ -9,6 +9,7 @@ import io.github.toberocat.improvedfactions.language.LangMessage;
 import io.github.toberocat.improvedfactions.language.Language;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class SettingsSubCommand extends SubCommand {
@@ -20,10 +21,20 @@ public class SettingsSubCommand extends SubCommand {
     protected void CommandExecute(Player player, String[] args) {
         if (FactionUtils.getFaction(player) != null) {
             Faction faction = FactionUtils.getFaction(player);
-            if (FactionUtils.getPlayerRank(faction, player).isAdmin()) {
-                new FactionSettingsGui(player, ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction);
+            if (args.length == 0) {
+                if (FactionUtils.getPlayerRank(faction, player).isAdmin()) {
+                    new FactionSettingsGui(player, ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction);
+                } else {
+                    CommandExecuteError(CommandExecuteError.OnlyAdminCommand, player);
+                }
+            } else if (args.length == 2 && args[0].equals("modt")) {
+                faction.setMotd(Language.format(args[1]));
+                player.sendMessage(Language.getPrefix() + Language.format("&a&lSuccessfully&f set modt"));
+            } else if (args.length == 2 && args[0].equals("rename")) {
+                faction.setDisplayName(Language.format(args[1]));
+                player.sendMessage(Language.getPrefix() + Language.format("&a&lSuccessfully&f renamed faction"));
             } else {
-                CommandExecuteError(CommandExecuteError.OnlyAdminCommand, player);
+                CommandExecuteError(CommandExecuteError.NotEnoughArgs, player);
             }
         } else {
             player.sendMessage(Language.getPrefix() + "§cYou need to be in a faction to use this command");
@@ -32,6 +43,11 @@ public class SettingsSubCommand extends SubCommand {
 
     @Override
     protected List<String> CommandTab(Player player, String[] args) {
+        if (args.length == 1) {
+            return Arrays.asList("modt", "rename");
+        } else if (args.length == 2) {
+            return Arrays.asList("<new>");
+        }
         return null;
     }
 

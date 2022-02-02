@@ -1,6 +1,7 @@
 package io.github.toberocat.improvedfactions.commands;
 
 import io.github.toberocat.improvedfactions.commands.factionCommands.*;
+import io.github.toberocat.improvedfactions.commands.factionCommands.relations.*;
 import io.github.toberocat.improvedfactions.language.LangMessage;
 import io.github.toberocat.improvedfactions.language.Language;
 import io.github.toberocat.improvedfactions.ImprovedFactionsMain;
@@ -41,6 +42,17 @@ public class FactionCommand implements CommandExecutor {
         subCommands.add(new SetRulesSubCommand());
         subCommands.add(new AdminSubCommand());
         subCommands.add(new InfoSubCommand());
+
+        subCommands.add(new AllySubCommand());
+        subCommands.add(new AllyAcceptSubCommand());
+        subCommands.add(new AllyDenySubCommand());
+        subCommands.add(new WarSubCommand());
+        subCommands.add(new NeutralSubCommand());
+        subCommands.add(new PowerSubCommand());
+        subCommands.add(new ClaimPower());
+        subCommands.add(new TutorialCommand());
+        subCommands.add(new InviteAccept());
+        subCommands.add(new ReportSubCommand());
     }
 
     public static List<SubCommand> subCommands = new ArrayList<SubCommand>();

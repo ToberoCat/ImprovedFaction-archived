@@ -8,6 +8,7 @@ import io.github.toberocat.improvedfactions.factions.Faction;
 import io.github.toberocat.improvedfactions.factions.FactionUtils;
 import io.github.toberocat.improvedfactions.language.LangMessage;
 import io.github.toberocat.improvedfactions.language.Language;
+import io.github.toberocat.improvedfactions.utility.callbacks.ExceptionCallback;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.protocol.game.PacketPlayOutChat;
 import org.apache.commons.lang.Validate;
@@ -98,6 +99,8 @@ public class Utils {
             faction.ClaimChunk(chunk, status -> {
                 if (status == null) { //No power left
                     Language.sendMessage(LangMessage.CLAIM_ONE_NO_POWER, player);
+                } else if (status.getClaimStatus() == ClaimStatus.Status.NOT_ALLOWED_WORLD) {
+                    player.sendMessage(Language.getPrefix() + "§cCannot claim in this world");
                 } else if (status.getClaimStatus() == ClaimStatus.Status.SUCCESS) { //Claimed chunk successfully
                     Language.sendMessage(LangMessage.CLAIM_ONE_SUCCESS, player);
                 } else if (status.getClaimStatus() == ClaimStatus.Status.NEED_CONNECTION) { //Chunk needs to be connected
@@ -117,6 +120,30 @@ public class Utils {
         }
     }
 
+    public static void ClaimChunk(Faction faction, Player player) {
+        Chunk chunk = player.getLocation().getChunk();
+
+        faction.ClaimChunk(chunk, status -> {
+            if (status == null) { //No power left
+                Language.sendMessage(LangMessage.CLAIM_ONE_NO_POWER, player);
+            } else if (status.getClaimStatus() == ClaimStatus.Status.NOT_ALLOWED_WORLD) {
+                player.sendMessage(Language.getPrefix() + "§cCannot claim in this world");
+            } else if (status.getClaimStatus() == ClaimStatus.Status.SUCCESS) { //Claimed chunk successfully
+                Language.sendMessage(LangMessage.CLAIM_ONE_SUCCESS, player);
+            } else if (status.getClaimStatus() == ClaimStatus.Status.NEED_CONNECTION) { //Chunk needs to be connected
+                Language.sendMessage(LangMessage.CLAIM_ONE_NOT_CONNECTED, player);
+            } else if (status.getClaimStatus() == ClaimStatus.Status.ALREADY_CLAIMED) { //Chunk claimed by another faction
+                if (status.getFactionClaim().getRegistryName().equals(faction.getRegistryName())) {
+                    Language.sendMessage(LangMessage.CLAIM_ONE_ALREADY_PROPERTY, player);
+                } else {
+                    Language.sendMessage(LangMessage.CLAIM_ONE_OWNED_BY_OTHERS, player);
+                }
+            } else {
+                player.sendMessage(Language.getPrefix() + "§cError: "  + status.getClaimStatus().toString());
+            }
+        });
+    }
+
     public static void UnClaimChunk(Player player) {
         if (FactionUtils.getFaction(player) != null) {
             Chunk chunk = player.getLocation().getChunk();
@@ -125,6 +152,8 @@ public class Utils {
             faction.UnClaimChunk(chunk, status -> {
                 if (status == null) { //No power left
                     Language.sendMessage(LangMessage.UNCLAIM_ONE_SOMETHING_WRONG, player);
+                } else if (status.getClaimStatus() == ClaimStatus.Status.NOT_ALLOWED_WORLD) {
+                    player.sendMessage(Language.getPrefix() + "§cCannot unclaim in this world");
                 } else if (status.getClaimStatus() == ClaimStatus.Status.SUCCESS) { //Claimed chunk successfully
                     Language.sendMessage(LangMessage.UNCLAIM_ONE_SUCCESS, player);
                 } else if (status.getClaimStatus() == ClaimStatus.Status.NEED_CONNECTION) { //Chunk needs to be connected
@@ -144,6 +173,41 @@ public class Utils {
         } else {
             player.sendMessage(Language.getPrefix() + "§cYou need to be in a faction");
         }
+    }
+
+    public static void UnClaimChunk(Faction faction, Player player) {
+        Chunk chunk = player.getLocation().getChunk();
+        faction.UnClaimChunk(chunk, status -> {
+            if (status == null) { //No power left
+                Language.sendMessage(LangMessage.UNCLAIM_ONE_SOMETHING_WRONG, player);
+            } else if (status.getClaimStatus() == ClaimStatus.Status.NOT_ALLOWED_WORLD) {
+                player.sendMessage(Language.getPrefix() + "§cCannot unclaim in this world");
+            } else if (status.getClaimStatus() == ClaimStatus.Status.SUCCESS) { //Claimed chunk successfully
+                Language.sendMessage(LangMessage.UNCLAIM_ONE_SUCCESS, player);
+            } else if (status.getClaimStatus() == ClaimStatus.Status.NEED_CONNECTION) { //Chunk needs to be connected
+                Language.sendMessage(LangMessage.UNCLAIM_ONE_DISCONNECTED, player);
+            } else if (status.getClaimStatus() == ClaimStatus.Status.NOT_CLAIMED) {
+                Language.sendMessage(LangMessage.UNCLAIM_ONE_ALREADY_WILDNESS, player);
+            } else if (status.getClaimStatus() == ClaimStatus.Status.NOT_PROPERTY) {
+                Language.sendMessage(LangMessage.UNCLAIM_ONE_NOT_YOUR_PROPERTY, player);
+            } else if (status.getClaimStatus() == ClaimStatus.Status.ALREADY_CLAIMED) { //Chunk claimed by another faction
+                if (status.getFactionClaim().getRegistryName().equals(faction.getRegistryName())) {
+                    player.sendMessage(Language.getPrefix() + "§cThis chunk is already your property");
+                } else {
+                    Language.sendMessage(LangMessage.UNCLAIM_ONE_NOT_YOUR_PROPERTY, player);
+                }
+            }
+        });
+
+    }
+
+    public static void run(ExceptionCallback cb) {
+        cb.callback();
+    }
+
+
+    public static void except(Exception e) {
+        e.printStackTrace();
     }
 
     public static boolean CallEvent(Class<FactionEvent> eventClazz, Faction faction, Object[] objects, boolean cancellable)

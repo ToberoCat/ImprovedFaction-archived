@@ -3,10 +3,14 @@ package io.github.toberocat.core.utility.settings;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.toberocat.MainIF;
 import io.github.toberocat.core.utility.Result;
+import io.github.toberocat.core.utility.Utility;
 import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.data.DataAccess;
+import io.github.toberocat.core.utility.dynamic.loaders.PlayerJoinLoader;
 import io.github.toberocat.core.utility.events.ConfigSaveEvent;
+import io.github.toberocat.core.utility.factions.members.FactionMemberManager;
 import io.github.toberocat.core.utility.json.JsonUtility;
+import io.github.toberocat.core.debug.Debugger;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,6 +18,8 @@ import org.bukkit.entity.Player;
 import java.util.*;
 
 public class PlayerSettings {
+
+    public enum TitlePosition { TITLE, SUBTITLE, ACTIONBAR, CHAT }
 
     @JsonIgnore
     private static final Map<UUID, PlayerSettings> SETTINGS = new HashMap();
@@ -54,6 +60,8 @@ public class PlayerSettings {
 
         return new Result<PlayerSettings>(true).setPaired(SETTINGS.get(uuid));
     }
+
+
     public static void PlayerJoined(final UUID joinedPlayer) {
         PREPARING.add(joinedPlayer);
         AsyncCore.Run(() -> {
@@ -61,13 +69,21 @@ public class PlayerSettings {
             if (DataAccess.exists("Players", joinedPlayer.toString())) {
                 settings = DataAccess.getFile("Players", joinedPlayer.toString(), PlayerSettings.class);
 
-                for (String key : DEFAULT_SETTINGS.keySet()) {
-                    Setting defaultSettings = DEFAULT_SETTINGS.get(key);
+                if (settings == null || settings.playerSettings == null) {
+                    Debugger.log("Couldn't load player settings. The old settings got overwritten");
+                    settings = new PlayerSettings(joinedPlayer);
+                } else {
+                    Debugger.log("Loaded player settings for " + Bukkit.getOfflinePlayer(joinedPlayer).getName());
+                    for (String key : DEFAULT_SETTINGS.keySet()) {
+                        Setting defaultSettings = DEFAULT_SETTINGS.get(key);
 
-                    settings.playerSettings.get(key).setType(defaultSettings.getType());
-                    settings.playerSettings.get(key).setMaterial(defaultSettings.getMaterial());
+                        settings.playerSettings.get(key).setType(defaultSettings.getType());
+                        settings.playerSettings.get(key).setMaterial(defaultSettings.getMaterial());
+                        settings.playerSettings.get(key).setEnumValues(defaultSettings.getEnumValues());
+                    }
                 }
             } else {
+                Debugger.log("Generating new player settings for " + Bukkit.getOfflinePlayer(joinedPlayer).getName());
                 settings = new PlayerSettings(joinedPlayer);
             }
             SETTINGS.put(joinedPlayer, settings);
@@ -76,10 +92,13 @@ public class PlayerSettings {
     }
     public static void PlayerLeave(UUID leftPlayer) {
         AsyncCore.Run(() -> {
-           DataAccess.AddFile("Players", leftPlayer.toString(), SETTINGS.get(leftPlayer));
+           DataAccess.addFile("Players", leftPlayer.toString(), SETTINGS.get(leftPlayer));
+           Debugger.log("Saved " +  Bukkit.getOfflinePlayer(leftPlayer).getName()
+                   + "'s player settings");
            SETTINGS.remove(leftPlayer);
         });
     }
+
 
     public static boolean init() {
         DEFAULT_SETTINGS.put("bossBars", new Setting<>(true, Setting.SettingsType.BOOL)
@@ -88,8 +107,11 @@ public class PlayerSettings {
                 .setMaterial(Material.COMMAND_BLOCK));
         DEFAULT_SETTINGS.put("displayTitle", new Setting<>(true, Setting.SettingsType.BOOL)
                 .setMaterial(Material.NAME_TAG));
-        DEFAULT_SETTINGS.put("titlePosition", new Setting<>(true, Setting.SettingsType.BOOL)
-                .setMaterial(Material.HEART_OF_THE_SEA));
+        DEFAULT_SETTINGS.put("titlePosition", new Setting<>(TitlePosition.TITLE, Setting.SettingsType.ENUM)
+                .setMaterial(Material.HEART_OF_THE_SEA).setEnumValues(Utility.getNames(TitlePosition.class)));
+        DEFAULT_SETTINGS.put("factionJoinTimeout", new Setting<>(FactionMemberManager.NONE_TIMEOUT,
+                Setting.SettingsType.NOT_LISTED));
+
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerJoined(player.getUniqueId());
@@ -104,7 +126,7 @@ public class PlayerSettings {
             @Override
             public Result SaveDataAccess() {
                 for (UUID player : SETTINGS.keySet()) {
-                    if (!DataAccess.AddFile("Players", player.toString(), SETTINGS.get(player)))
+                    if (!DataAccess.addFile("Players", player.toString(), SETTINGS.get(player)))
                         return new Result<String>(false)
                                 .setPaired(JsonUtility.SaveObject(player.toString()))
                                 .setMachineMessage("Players/" + player + ".json");
@@ -114,6 +136,10 @@ public class PlayerSettings {
             }
         });
         return true;
+    }
+
+    public Setting getSetting(String key) {
+        return playerSettings.get(key);
     }
 
     @JsonIgnore

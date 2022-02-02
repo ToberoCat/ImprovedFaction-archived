@@ -7,12 +7,10 @@ import io.github.toberocat.improvedfactions.ranks.AdminRank;
 import io.github.toberocat.improvedfactions.ranks.MemberRank;
 import io.github.toberocat.improvedfactions.ranks.OwnerRank;
 import io.github.toberocat.improvedfactions.ranks.Rank;
-import io.github.toberocat.improvedfactions.utility.Callback;
 import io.github.toberocat.improvedfactions.utility.SignMenuFactory;
 import io.github.toberocat.improvedfactions.utility.Utils;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -59,33 +57,36 @@ public class FactionSettings {
                 Arrays.asList(Faction.OpenType.values()), Faction.OpenType.Private.ordinal()));
 
         FLAGS.put(Faction.RENAME_FLAG, new Flag(Flag.FlagType.Function, Material.OAK_SIGN, "&aRename faction",
-                "&8Rename your faction", new Callback() {
-            @Override
-            public boolean CallBack(Faction faction, Player player, Object object) {
-                SignMenuFactory.Menu menu = ImprovedFactionsMain.getPlugin().getSignMenuFactory().newMenu(Arrays.asList(faction.getDisplayName()))
-                        .reopenIfFail(true)
-                        .response((p, strings) -> {
-                            faction.setDisplayName(Language.format(strings[0]));
-                            return true;
-                        });
-                menu.open(player);
-                return false;
-            }
-        }));
+                "&8Rename your faction", (faction, player, object) -> {
+                    try {
+                        SignMenuFactory.Menu menu = ImprovedFactionsMain.getPlugin().getSignMenuFactory().newMenu(Arrays.asList(faction.getDisplayName()))
+                                .reopenIfFail(true)
+                                .response((p, strings) -> {
+                                    faction.setDisplayName(Language.format(strings[0]));
+                                    return true;
+                                });
+                        menu.open(player);
+                    } catch (NullPointerException e) {
+                        //ToDo: Fix protocolLib bug
+                        player.sendMessage("Please use §8/f settings rename");
+                    }
+                }));
         FLAGS.put(Faction.MOTD, new Flag(Flag.FlagType.Function, Material.BIRCH_SIGN, "&aFaction motd",
-                "&8Set your faction motd", new Callback() {
-            @Override
-            public boolean CallBack(Faction faction, Player player, Object object) {
-                SignMenuFactory.Menu menu = ImprovedFactionsMain.getPlugin().getSignMenuFactory().newMenu(Arrays.asList(faction.getMotd()))
-                        .reopenIfFail(true)
-                        .response((p, strings) -> {
-                            faction.setMotd(Language.format(strings[0]));
-                            return true;
-                        });
-                menu.open(player);
-                return false;
-            }
-        }));
+                "&8Set your faction motd", (faction, player, object) -> {
+                    try {
+                        SignMenuFactory.Menu menu = ImprovedFactionsMain.getPlugin().getSignMenuFactory().newMenu(Arrays.asList(faction.getMotd()))
+                                .reopenIfFail(true)
+                                .response((p, strings) -> {
+                                    faction.setMotd(Language.format(strings[0]));
+                                    return true;
+                                });
+                        menu.open(player);
+                    } catch (NullPointerException e) {
+                        //ToDo: Fix protocolLib bug
+                        player.sendMessage("Please use §8/f settings motd");
+                    }
+
+                }));
 
         for (String key : FLAGS.keySet()) {
             ImprovedFactionsMain.getPlugin().getConfig().addDefault("factions.flags." + key, true);

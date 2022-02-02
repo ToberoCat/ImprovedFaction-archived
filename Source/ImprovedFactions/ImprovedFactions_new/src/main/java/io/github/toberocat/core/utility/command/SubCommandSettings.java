@@ -1,19 +1,15 @@
 package io.github.toberocat.core.utility.command;
 
 import io.github.toberocat.MainIF;
-import io.github.toberocat.core.utility.FactionUtility;
+import io.github.toberocat.core.utility.factions.FactionUtility;
 import io.github.toberocat.core.utility.factions.Faction;
-import io.github.toberocat.core.utility.language.Language;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.logging.Level;
 
 public class SubCommandSettings {
 
-    public enum NYI { No, Yes, Ignore };
+    public enum NYI { No, Yes, Ignore }
 
     private String factionPermission;
     private boolean needsAdmin;

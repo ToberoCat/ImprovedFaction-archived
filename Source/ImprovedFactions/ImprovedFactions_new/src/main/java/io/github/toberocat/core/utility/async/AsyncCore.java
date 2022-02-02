@@ -1,5 +1,6 @@
 package io.github.toberocat.core.utility.async;
 
+import io.github.toberocat.core.utility.Utility;
 import io.github.toberocat.core.utility.callbacks.Callback;
 import io.github.toberocat.core.utility.callbacks.ResultCallback;
 import io.github.toberocat.core.utility.callbacks.ReturnCallback;
@@ -18,7 +19,6 @@ public class AsyncCore<T> {
 
     /**
      * Run tasks using the threading settings in config.yml performance section
-     * @param callback
      */
     public static <T> AsyncCore<T> Run(ReturnCallback<T> callback) {
         AsyncCore<T> core = new AsyncCore<>(callback);
@@ -28,7 +28,7 @@ public class AsyncCore<T> {
 
     public static <T> AsyncCore<T> Run(Callback callback) {
         AsyncCore<T> core = new AsyncCore<>(() -> {
-            callback.Callback();
+            callback.callback();
             return null;
         });
         core.thread.start();
@@ -66,7 +66,7 @@ public class AsyncCore<T> {
             thread.join();
             return this;
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Utility.except(e);
             return this;
         }
     }
@@ -91,11 +91,10 @@ public class AsyncCore<T> {
     /**
      * This callback will be fired when the thread finished.
      * When thread is already finished, the callback is run instanly
-     * @param finishCallback
      */
     public AsyncCore<T> setFinishCallback(ResultCallback<T> finishCallback) {
         this.finishCallback = finishCallback;
-        if (hasFinished()) { finishCallback.Callback(threadResult); }
+        if (hasFinished()) { finishCallback.call(threadResult); }
         return this;
     }
 
@@ -107,7 +106,7 @@ public class AsyncCore<T> {
             addTask();
             threadResult = callback.Callback();
             hasFinished = true;
-            if (finishCallback != null) finishCallback.Callback(threadResult);
+            if (finishCallback != null) finishCallback.call(threadResult);
             removeTask();
         });
     }

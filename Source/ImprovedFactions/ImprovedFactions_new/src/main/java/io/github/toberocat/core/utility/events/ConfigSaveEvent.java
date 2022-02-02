@@ -1,10 +1,6 @@
 package io.github.toberocat.core.utility.events;
 
-import io.github.toberocat.core.utility.ObjectPair;
 import io.github.toberocat.core.utility.config.Config;
-import org.bukkit.Chunk;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 import io.github.toberocat.core.utility.Result;
 
 public interface ConfigSaveEvent  {
@@ -34,5 +30,5 @@ public interface ConfigSaveEvent  {
         return new Result<>(true);
     }
 
-    enum SaveType {Config, DataAccess };
+    enum SaveType {Config, DataAccess }
 }

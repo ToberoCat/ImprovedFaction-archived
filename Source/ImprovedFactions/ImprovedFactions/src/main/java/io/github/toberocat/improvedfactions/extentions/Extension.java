@@ -22,6 +22,7 @@ public abstract class Extension {
     protected abstract ExtensionRegistry register();
 
     public final void Enable(ImprovedFactionsMain plugin) {
+        registry = register();
         ExtensionObject object = ExtensionListLoader.getExtenionObject(registry.getName());
 
         if (object != null) {
@@ -45,6 +46,11 @@ public abstract class Extension {
         }
 
 
+        plugin.getServer().getConsoleSender().sendMessage("§7[Factions] §eLoading " + registry.getName() + " v" + registry.getVersion());
+        OnEnable(plugin);
+        enabled = true;
+
+        /*
         if (Arrays.asList(registry.getPluginVersions()).contains(ImprovedFactionsMain.getVERSION())) {
             plugin.getServer().getConsoleSender().sendMessage("§7[Factions] §eLoading " + registry.getName() + " v" + registry.getVersion());
             OnEnable(plugin);
@@ -52,6 +58,7 @@ public abstract class Extension {
         } else {
             plugin.getServer().getConsoleSender().sendMessage("§7[Factions] §c " + registry.getName() + " v" + registry.getVersion() + " needs plugin versions " + Arrays.toString(registry.getPluginVersions()));
         }
+         */
 
     }
 
@@ -74,7 +81,6 @@ public abstract class Extension {
     }
 
     public boolean preLoad(ImprovedFactionsMain plugin) {
-        registry = register();
         return true;
     }
 
@@ -95,7 +101,7 @@ public abstract class Extension {
     }
 
     public ExtensionRegistry getRegistry() {
-        return registry;
+        return register();
     }
 
     public boolean isEnabled() {

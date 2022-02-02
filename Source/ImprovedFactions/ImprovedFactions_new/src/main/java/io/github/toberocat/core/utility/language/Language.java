@@ -4,6 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import io.github.toberocat.MainIF;
+import io.github.toberocat.core.debug.Debugger;
+import io.github.toberocat.core.utility.ObjectPair;
+import io.github.toberocat.core.utility.Utility;
+import io.github.toberocat.core.utility.async.AsyncCore;
+import io.github.toberocat.core.utility.dynamic.loaders.PlayerJoinLoader;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -11,6 +16,7 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.io.IOException;
 import java.text.Normalizer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -18,16 +24,19 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Language {
+public class Language extends PlayerJoinLoader {
     private static final Pattern pattern = Pattern.compile("(#[a-fA-F0-9]{6})");
     private static boolean gotInitialized = false;
 
-    private static Map<String, LangMessage> langFiles;
+    private static Map<String, ObjectPair<Integer, LangMessage>> LOADED_LANGUAGES;
 
 
     public static boolean init(MainIF plugin, File datatDir) {
         File langDir = new File(datatDir.getPath() + "/lang");
-        langDir.mkdir();
+        if (!langDir.exists() && !langDir.mkdir()) {
+            MainIF.getIF().SaveShutdown("Couldn't create folder &6" + langDir.getPath());
+            return false;
+        }
 
         LangMessage defaultMessages = new LangMessage();
         try {
@@ -38,10 +47,10 @@ public class Language {
                 mapper.writerWithDefaultPrettyPrinter().writeValue(en_us, defaultMessages);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Utility.except(e);
         }
 
-        langFiles = new HashMap<>();
+        LOADED_LANGUAGES = new HashMap<>();
 
         for (File file : langDir.listFiles()) {
             String[] split = file.getName().split("\\.");
@@ -49,7 +58,6 @@ public class Language {
                 try {
                     ObjectMapper mapper = new ObjectMapper();
                     LangMessage langMessage = mapper.readValue(file, LangMessage.class);
-                    langFiles.put(split[0], langMessage);
 
                     // Add missing files
                     MapDifference<String, String> diff = Maps.difference(langMessage.getMessages(), defaultMessages.getMessages());
@@ -63,55 +71,96 @@ public class Language {
                     ObjectMapper saveMapper = new ObjectMapper();
                     saveMapper.writerWithDefaultPrettyPrinter().writeValue(file, langMessage);
                 } catch (IOException e) {
+                    if (MainIF.getConfigManager().getValue("general.printStacktrace")) e.printStackTrace();
                     MainIF.getIF().SaveShutdown("&cCouldn't read language file " + file.getName() + ". Error: &6" + e.getMessage());
                     return false;
                 }
             }
         }
+
+        Subscribe(new Language());
         gotInitialized = true;
         return true;
     }
 
-    public static String getMessage(String msgKey, Player player) {
-        String locale = player.getLocale();
-        if (langFiles.containsKey(locale)) {
-            LangMessage langMessage = langFiles.get(locale);
+    private static void LoadLanguage(File file) {
+        String[] split = file.getName().split("\\.");
+        if (split.length > 1 && split[1].equals("lang")) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                LangMessage langMessage = mapper.readValue(file, LangMessage.class);
 
-           return format(langMessage.getMessages().get(msgKey));
-        } else {
-            LangMessage langMessage = langFiles.get("en_us");
-
-            return format(langMessage.getMessages().get(msgKey));
+                ObjectMapper saveMapper = new ObjectMapper();
+                saveMapper.writerWithDefaultPrettyPrinter().writeValue(file, langMessage);
+                LOADED_LANGUAGES.put(split[0], new ObjectPair<>(1, langMessage));
+            } catch (IOException e) {
+                MainIF.getIF().SaveShutdown("&cCouldn't read language file " + file.getName() + ". Error: &6" + e.getMessage());
+            }
         }
     }
 
-    public static String getMessage(String msgKey, String file) {
-        if (langFiles.containsKey(file)) {
-            LangMessage langMessage = langFiles.get(file);
+    @Override
+    protected void loadPlayer(final Player player) {
+        AsyncCore.Run(() -> {
+            String locale = player.getLocale();
+            if (LOADED_LANGUAGES.containsKey(locale)) {
+                ObjectPair<Integer, LangMessage> pair = LOADED_LANGUAGES.get(locale);
+                pair.setT(pair.getT() + 1);
+                return;
+            }
 
-            return format(langMessage.getMessages().get(msgKey));
+            String langPath = MainIF.getIF().getDataFolder().getPath() + "/lang";
+            File langDir = new File(langPath);
+            if (!Arrays.stream(langDir.listFiles()).anyMatch(x -> x.getName().equals(locale + ".lang"))) return;
+
+            Debugger.log("Loading " + locale + " for " + player.getName());
+
+            LoadLanguage(new File(langPath + "/" + locale + ".lang"));
+        });
+    }
+
+    @Override
+    protected void unloadPlayer(Player player) {
+        String locale = player.getLocale();
+
+        if (LOADED_LANGUAGES.get(locale).getT() == 1) {
+            Debugger.log("Removing " + locale + " for " + player.getName());
+            LOADED_LANGUAGES.remove(locale);
         } else {
-            LangMessage langMessage = langFiles.get("en_us");
-
-            return format(langMessage.getMessages().get(msgKey));
+            ObjectPair<Integer, LangMessage> pair = LOADED_LANGUAGES.get(locale);
+            pair.setT(pair.getT() - 1);
         }
     }
 
-    public static void sendMessage(String msgKey, Player player, Parseable... parseables) {
+    public static String getMessage(String msgKey, Player player, Parseable... parseables) {
         String locale = player.getLocale();
-        LangMessage langMessage = null;
+        return getMessage(msgKey, locale, parseables);
+    }
 
-        if (langFiles.containsKey(locale)) {
-            langMessage = langFiles.get(locale);
+    public static String getMessage(String msgKey, String file, Parseable... parseables) {
+        LangMessage langMessage;
+        if (LOADED_LANGUAGES.containsKey(file)) {
+            langMessage = LOADED_LANGUAGES.get(file).getE();
+        } else if (LOADED_LANGUAGES.containsKey("en_us")){
+            langMessage = LOADED_LANGUAGES.get("en_us").getE();
         } else {
-            langMessage = langFiles.get("en_us");
+            MainIF.getIF().SaveShutdown("Wasn't able to find &6en_us&c translation file");
+            return "";
         }
 
         if (langMessage.getMessages().containsKey(msgKey)) {
-            player.sendMessage(getPrefix() + format(parse(langMessage.getMessages().get(msgKey), parseables)));
+           return format(parse(langMessage.getMessages().get(msgKey), parseables));
         } else {
-            player.sendMessage(getPrefix() + format("&cThere went something wrong. If this happens more than two times, please report it to an admin. Error: NoLocalizationFound"));
+            return format("&cThere went something wrong. If this happens more than two times, please report it to an admin. Error: NoLocalizationFound");
         }
+    }
+
+    public static void sendRawMessage(String message, Player player) {
+        player.sendMessage(getPrefix() + format(message));
+    }
+
+    public static void sendMessage(String msgKey, Player player, Parseable... parseables) {
+        player.sendMessage(getPrefix() + getMessage(msgKey, player, parseables));
     }
 
     /**

@@ -1,7 +1,8 @@
 package io.github.toberocat.core.utility.factions.rank;
 
+import io.github.toberocat.MainIF;
 import io.github.toberocat.core.utility.Utility;
-import io.github.toberocat.core.utility.language.Language;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -29,18 +30,12 @@ public abstract class Rank {
         new MemberRank();
         new OwnerRank();
         new NewMemberRank();
+        new GuestRank();
     }
 
-    public String[] getDescription() {
-        int maxlines = 3;
-        String[] lines = new String[maxlines+1];
-        for (int i = 0; i < maxlines; i++) {
-            String line = Language.format(description(i));
-            if (!line.isEmpty()) {
-                lines[i] = line;
-            }
-        }
-        return lines;
+    public String[] getDescription(Player player) {
+        String lines = WordUtils.wrap(description(player), MainIF.getConfigManager().getValue("gui.wrapLength"));
+        return lines.split("\\n");
     }
 
     public boolean isAdmin() {
@@ -55,7 +50,7 @@ public abstract class Rank {
         return registryName;
     }
 
-    public abstract String description(int line);
+    public abstract String description(Player player);
 
     public ItemStack getItem() {
         return Utility.createItem(Material.GRASS_BLOCK, getDisplayName());

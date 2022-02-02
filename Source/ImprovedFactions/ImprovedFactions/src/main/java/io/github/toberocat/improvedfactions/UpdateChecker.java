@@ -2,8 +2,6 @@ package io.github.toberocat.improvedfactions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.github.toberocat.improvedfactions.extentions.list.ExtensionList;
-import io.github.toberocat.improvedfactions.utility.Utils;
 
 import java.io.IOException;
 import java.net.URL;

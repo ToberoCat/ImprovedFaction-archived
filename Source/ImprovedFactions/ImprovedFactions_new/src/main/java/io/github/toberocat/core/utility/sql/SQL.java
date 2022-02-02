@@ -1,10 +1,11 @@
 package io.github.toberocat.core.utility.sql;
 
+import io.github.toberocat.core.utility.Utility;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
 
 public class SQL {
 
@@ -75,8 +76,8 @@ public class SQL {
                 }
 
                 ps.executeUpdate();
-            } catch (SQLException exception) {
-                exception.printStackTrace();
+            } catch (SQLException e) {
+                Utility.except(e);
             }
             return this;
         }
@@ -87,8 +88,8 @@ public class SQL {
                 ps.setString(1, value.toString());
                 ResultSet result = ps.executeQuery();
                 return result.next();
-            } catch (SQLException exception) {
-                exception.printStackTrace();
+            } catch (SQLException e) {
+                Utility.except(e);
                 return false;
             }
         }
@@ -108,38 +109,38 @@ public class SQL {
         try {
             PreparedStatement ps = connection.prepareStatement("CREATE TABLE IF NOT EXISTS "+table+" "+columnsToString(columns));
             ps.executeUpdate();
-        } catch (SQLException exception) {
-            exception.printStackTrace();
+        } catch (SQLException e) {
+            Utility.except(e);
         }
         return new SQLTable(table, connection).setColumns(columns);
     }
 
     private String columnsToString(Column[] columns) {
-        String output = "(";
+        StringBuilder output = new StringBuilder("(");
         for (Column column : columns) {
-            output += column.getColumnName() + " " + column.getValue().toString() + "(" + column.getValue().getValue() + ")" + ",";
+            output.append(column.getColumnName()).append(" ").append(column.getValue().toString()).append("(").append(column.getValue().getValue()).append(")").append(",");
         }
 
-        output += "PRIMARY KEY ("+columns[0].getValue().toString()+")";
-        output += ")";
+        output.append("PRIMARY KEY (").append(columns[0].getValue().toString()).append(")");
+        output.append(")");
 
-        return output;
+        return output.toString();
     }
 
     private String columnsToRowA(Column[] columns) {
-        String output = "(";
+        StringBuilder output = new StringBuilder("(");
 
         for (int i = 0; i < columns.length; i++) {
-            output += columns[i].getColumnName() + (i != columns.length - 1 ? ",": "");
+            output.append(columns[i].getColumnName()).append(i != columns.length - 1 ? "," : "");
         }
         return output + ")";
     }
 
     private String columnsToRowA(String fill, Column[] columns) {
-        String output = "(";
+        StringBuilder output = new StringBuilder("(");
 
         for (int i = 0; i < columns.length; i++) {
-            output += fill+ (i != columns.length - 1 ? ",": "");
+            output.append(fill).append(i != columns.length - 1 ? "," : "");
         }
         return output + ")";
     }

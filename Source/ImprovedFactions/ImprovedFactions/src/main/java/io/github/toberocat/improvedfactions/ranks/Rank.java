@@ -2,7 +2,6 @@ package io.github.toberocat.improvedfactions.ranks;
 
 import io.github.toberocat.improvedfactions.language.Language;
 import io.github.toberocat.improvedfactions.utility.Utils;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -28,6 +27,8 @@ public abstract class Rank {
         new MemberRank();
         new OwnerRank();
         new NewMemberRank();
+        new GuestRank();
+        new AllyRank();
     }
 
     public String[] getDescription() {

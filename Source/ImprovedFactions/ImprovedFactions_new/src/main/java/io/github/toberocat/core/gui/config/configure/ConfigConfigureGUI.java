@@ -1,18 +1,12 @@
 package io.github.toberocat.core.gui.config.configure;
 
 import io.github.toberocat.MainIF;
-import io.github.toberocat.core.utility.Utility;
 import io.github.toberocat.core.utility.config.Config;
-import io.github.toberocat.core.utility.config.DataManager;
 import io.github.toberocat.core.utility.gui.GUISettings;
 import io.github.toberocat.core.utility.gui.Gui;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ConfigConfigureGUI extends Gui {
 

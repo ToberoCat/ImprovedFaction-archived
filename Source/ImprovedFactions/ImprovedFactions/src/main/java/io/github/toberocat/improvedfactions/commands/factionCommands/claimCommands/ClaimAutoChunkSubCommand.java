@@ -19,19 +19,25 @@ public class ClaimAutoChunkSubCommand extends SubCommand {
     protected void CommandExecute(Player player, String[] args) {
         if (FactionUtils.getFaction(player) != null) {
             if (autoClaim.contains(player.getUniqueId())) {
-                autoClaim.remove(player.getUniqueId());
+                disable(player);
             } else {
+                UnclaimAutoChunkSubCommand.disable(player);
                 autoClaim.add(player.getUniqueId());
             }
 
             if (autoClaim.contains(player.getUniqueId())) {
                 Language.sendMessage(LangMessage.AUTO_CLAIM_ENABLED, player);
-            } else {
-                Language.sendMessage(LangMessage.AUTO_CLAIM_DISABLED, player);
             }
         } else {
             CommandExecuteError(CommandExecuteError.NoFaction, player);
         }
+    }
+
+    public static void disable(Player player) {
+        if (!autoClaim.contains(player.getUniqueId())) return;
+
+        Language.sendMessage(LangMessage.AUTO_CLAIM_DISABLED, player);
+        autoClaim.remove(player.getUniqueId());
     }
 
     @Override

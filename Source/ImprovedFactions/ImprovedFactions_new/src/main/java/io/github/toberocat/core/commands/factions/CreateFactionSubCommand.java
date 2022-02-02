@@ -4,6 +4,7 @@ import io.github.toberocat.core.utility.Result;
 import io.github.toberocat.core.utility.command.SubCommand;
 import io.github.toberocat.core.utility.command.SubCommandSettings;
 import io.github.toberocat.core.utility.factions.Faction;
+import io.github.toberocat.core.utility.factions.FactionUtility;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
 import io.github.toberocat.core.utility.language.Parseable;
@@ -25,7 +26,7 @@ public class CreateFactionSubCommand extends SubCommand {
     @Override
     protected void CommandExecute(Player player, String[] args) {
 
-        if(!Faction.isFactionRegistryInStorage(args[0])) {
+        if(!FactionUtility.doesFactionExist(FactionUtility.factionDisplayToRegistry(args[0]))) {
             CreateFaction(player, args[0]);
         } else {
             Language.sendMessage(LangMessage.COMMAND_FACTION_CREATE_FAILED, player,
@@ -35,7 +36,7 @@ public class CreateFactionSubCommand extends SubCommand {
 
     @Override
     protected List<String> CommandTab(Player player, String[] args) {
-        return Arrays.asList("Name");
+        return List.of("Name");
     }
 
     private void CreateFaction(Player player, String _name) {

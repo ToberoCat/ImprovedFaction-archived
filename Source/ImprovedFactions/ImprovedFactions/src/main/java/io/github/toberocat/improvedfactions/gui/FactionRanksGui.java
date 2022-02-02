@@ -65,6 +65,7 @@ public class FactionRanksGui implements Gui {
 
     private void CreatePage() {
         //fill last row
+        inv.clear();
         if (page != 0)
             inv.setItem(45, Utils.createItem(Material.ARROW, "§c§lGo back", new String[] {
                     (page - 1) + ""

@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public class DataManager {
 
@@ -71,10 +70,10 @@ public class DataManager {
             return;
 
         try {
-            this.getConfig().set("version", MainIF.getVERSION());
+            this.getConfig().set("version", MainIF.getVersion().toString());
             this.getConfig().save(this.configFile);
         } catch (IOException e) {
-            this.plugin.getLogger().log(Level.SEVERE, "Could not save config to " + this.configFile, e);
+            Utility.except(e);
         }
     }
 

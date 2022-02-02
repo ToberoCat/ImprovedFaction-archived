@@ -1,6 +1,14 @@
 package io.github.toberocat.improvedfactions.factions;
 
+import io.github.toberocat.improvedfactions.event.faction.FactionJoinEvent;
+import io.github.toberocat.improvedfactions.event.faction.FactionLeaveEvent;
+import io.github.toberocat.improvedfactions.factions.economy.Bank;
+import io.github.toberocat.improvedfactions.factions.power.PowerManager;
+import io.github.toberocat.improvedfactions.factions.relation.RelationManager;
+import io.github.toberocat.improvedfactions.ranks.GuestRank;
+import io.github.toberocat.improvedfactions.ranks.OwnerRank;
 import io.github.toberocat.improvedfactions.utility.*;
+import io.github.toberocat.improvedfactions.utility.Utils;
 import io.github.toberocat.improvedfactions.utility.configs.DataManager;
 import io.github.toberocat.improvedfactions.ImprovedFactionsMain;
 import io.github.toberocat.improvedfactions.gui.Flag;
@@ -42,43 +50,55 @@ public class Faction {
     public static final String RENAME_FLAG = "rename";
     public static final String MOTD = "motd";
 
-    private int power;
-
     private String rules;
 
     private String displayName;
-    private final String registryName;
+    private String registryName;
     private FactionMember[] members;
 
     private String description = "A improved faction faction";
     private String motd = "";
 
-    private int claimedchunks;
+    private PowerManager powerManager;
+    private RelationManager relationManager;
+    private Bank bank;
+
+    private boolean permanent;
+    private boolean frozen;
+
+    private int claimChunks;
 
     private final FactionSettings settings;
     private List<UUID> bannedPeople;
 
-    public Faction(ImprovedFactionsMain plugin, String displayName, OpenType openType) {
-        this(displayName);
-        members = new FactionMember[plugin.getConfig().getInt("factions.maxMembers")];
-        Arrays.fill(members, null);
+    private UUID owner;
 
-        power = ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.startClaimPower");
-
-    }
-    public Faction(String displayName, FactionMember[] members) {
-        this(displayName);
-        this.members = members;
-
+    public static Faction create(Player owner, String displayName) {
+        Faction faction = new Faction(owner, displayName);
+        return faction;
     }
 
-    private Faction(String displayName) {
+    private Faction(OfflinePlayer owner, String displayName) {
         this.displayName = displayName;
         this.registryName = ChatColor.stripColor(displayName);
-        claimedchunks = 0;
+        this.claimChunks = 0;
+        this.owner = owner.getUniqueId();
+
+        // ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.maxMembers")
+        members = new FactionMember[ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.maxMembers")];
+
 
         bannedPeople = new ArrayList<>();
         settings = new FactionSettings();
+
+
+        relationManager = new RelationManager(this);
+        powerManager = new PowerManager(this);
+        bank = new Bank(this);
+
+        permanent = ImprovedFactionsMain.getPlugin().getConfig().getBoolean("faction.permanent");
+        frozen = false;
+
         FACTIONS.add(this);
     }
 
@@ -90,16 +110,29 @@ public class Faction {
         return settings.getRanks().get(perm);
     }
 
-    public FactionMember[] getMembers() {
-        return members;
-    }
-
     public boolean hasPermission(Player player, String permission) {
         FactionMember member = getFactionMember(player);
+        if (member == null) {
+            for (String ally : relationManager.getAllies()) {
+                Faction allied = FactionUtils.getFactionByRegistry(ally);
+                FactionMember[] players = Arrays.stream(allied.members).filter(x -> x.getUuid() == player.getUniqueId()).toArray(FactionMember[]::new);
+                if (players.length == 1) {
+                    member = players[0];
+                    break;
+                }
+            }
 
-        if (member.getRank().isAdmin()) return true;
+            if (member == null) {
+                member = new FactionMember(player.getUniqueId(), Rank.fromString(GuestRank.registry));
+            }
+        }
 
         FactionRankPermission perms = settings.getRanks().get(permission);
+        if (perms == null) {
+            ImprovedFactionsMain.getConsoleSender().sendMessage("Couldn't get permissions for "
+                    + permission + ". This should not happen. If it does (It did if you are reading this), please report it to me (The developer). Send me a message over discord or spigotmc. Go on spigotmc to get a link to discord");
+            return false;
+        }
         return perms.getRanks().contains(member.getRank());
     }
 
@@ -129,6 +162,17 @@ public class Faction {
     }
 
     public boolean Join(Player player, Rank rank) {
+        boolean result = JoinSilent(player, rank);
+        if (!result) return false;
+        FactionJoinEvent joinEvent = new FactionJoinEvent(this, player);
+        Bukkit.getPluginManager().callEvent(joinEvent);
+
+        return true;
+    }
+
+    public boolean JoinSilent(Player player, Rank rank) {
+        if (frozen) return false;
+        if (bannedPeople.contains(player.getUniqueId())) return false;
         boolean success = false;
         for (int i = 0; i < members.length; i++) {
             if (members[i] == null) {
@@ -137,14 +181,18 @@ public class Faction {
                 break;
             }
         }
+        if (!success) return false;
+
         ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction = this;
-        power += ImprovedFactionsMain.getPlugin().getConfig().getInt("faction.powerPerPlayer");
-        if (power >= ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.maxClaimPower"))
-            power = ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.maxClaimPower");
-        return success;
+
+        powerManager.addFactionMember();
+
+        return true;
     }
 
     public boolean Join(UUID uuid, Rank rank) {
+        if (frozen) return false;
+        if (bannedPeople.contains(uuid)) return false;
         boolean success = false;
         for (int i = 0; i < members.length; i++) {
             if (members[i] == null) {
@@ -153,20 +201,24 @@ public class Faction {
                 break;
             }
         }
-        power += ImprovedFactionsMain.getPlugin().getConfig().getInt("faction.powerPerPlayer");
-        if (power >= ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.maxClaimPower"))
-            power = ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.maxClaimPower");
-        return success;
+        if (!success) return false;
+
+        ImprovedFactionsMain.playerData.get(uuid).playerFaction = this;
+
+        powerManager.addFactionMember();
+
+        return true;
     }
 
     public void ClaimChunk(Chunk chunk, TCallback<ClaimStatus> callback) {
-        if (claimedchunks >= power) {
+        if (!powerManager.canClaimChunk()) {
             callback.Callback(null);
             return;
         }
         ChunkUtils.ClaimChunk(chunk, this, result -> {
             if (result.getClaimStatus() == ClaimStatus.Status.SUCCESS) {
-                claimedchunks++;
+                powerManager.claimChunk();
+                claimChunks++;
             }
             callback.Callback(result);
         });
@@ -174,12 +226,17 @@ public class Faction {
 
     public void UnClaimChunk(Chunk chunk, TCallback<ClaimStatus> callback) {
         ChunkUtils.UnClaimChunk(chunk, this, result -> {
-            if (result.getClaimStatus() == ClaimStatus.Status.SUCCESS) claimedchunks--;
+            if (result.getClaimStatus() == ClaimStatus.Status.SUCCESS) {
+                powerManager.unclaimChunk();
+                claimChunks--;
+            };
             callback.Callback(result);
         });
     }
 
     public boolean DeleteFaction() {
+        if (frozen) return false;
+
         for (FactionMember member : members) {
             if (member != null) {
                 OfflinePlayer player = Bukkit.getOfflinePlayer(member.getUuid());
@@ -187,11 +244,23 @@ public class Faction {
             }
         }
         FACTIONS.remove(this);
+
+        bank.delete();
+
+        for (String ally : relationManager.getAllies()) {
+            FactionUtils.getFactionByRegistry(ally).relationManager.neutral(this);
+        }
+
+        for (String enemies : relationManager.getEnemies()) {
+            FactionUtils.getFactionByRegistry(enemies).relationManager.neutral(this);
+        }
         return true;
     }
 
 
     public boolean Leave(Player player) {
+        if (frozen) return false;
+
         for (int i = 0; i < members.length; i++) {
             if (members[i] != null && members[i].getUuid().equals(player.getUniqueId())) {
                 members[i] = null;
@@ -199,17 +268,23 @@ public class Faction {
             }
         }
         ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction = null;
-        power -= ImprovedFactionsMain.getPlugin().getConfig().getInt("faction.powerPerPlayer");
+        powerManager.removeFactionMember();
         return false;
     }
 
     public boolean Leave(OfflinePlayer player) {
+        if (frozen) return false;
+
         for (int i = 0; i < members.length; i++) {
             if (members[i] != null && members[i].getUuid().equals(player.getUniqueId())) {
                 members[i] = null;
                 return true;
             }
         }
+        FactionLeaveEvent leaveEvent = new FactionLeaveEvent(this, player);
+        Bukkit.getPluginManager().callEvent(leaveEvent);
+
+        powerManager.removeFactionMember();
         ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction = null;
         return false;
     }
@@ -235,8 +310,18 @@ public class Faction {
                 flags.add(Flag.fromString(str));
             }
 
-            Faction faction = new Faction(displayName, members);
+            String owner = data.getConfig().getString("f." + key + ".owner");
+            if (owner == null) {
+                for (FactionMember member : members) {
+                    if (member.getRank().getRegistryName().equals(OwnerRank.registry)) {
+                        owner = member.getUuid().toString();
+                    }
+                }
+            }
 
+            UUID uuid = UUID.fromString(owner);
+            Faction faction = new Faction(Bukkit.getOfflinePlayer(uuid), displayName);
+            faction.members = members;
             for (int i = 0; i < flags.size(); i++) {
                 faction.settings.getFlags().put(rawFlags.get(i).split("::")[0], flags.get(i));
             }
@@ -253,8 +338,28 @@ public class Faction {
                 }
             }
 
-            faction.claimedchunks = data.getConfig().getInt("f." +key + ".claimedChunks");
-            faction.power = data.getConfig().getInt("f." +key + ".power");
+            faction.powerManager = new PowerManager(faction);
+            faction.powerManager.setPower(data.getConfig().getInt("f." +key + ".power"));
+            faction.powerManager.setMaxPower(data.getConfig().getInt("f." +key + ".maxPower"));
+            faction.powerManager.startRegenerationThread();
+
+            faction.relationManager = new RelationManager(faction);
+            faction.relationManager.setAllies((ArrayList<String>)
+                    data.getConfig().getStringList("f." + key + ".allies"));
+            faction.relationManager.setEnemies((ArrayList<String>)
+                    data.getConfig().getStringList("f." + key + ".enemies"));
+            faction.relationManager.setInvites((ArrayList<String>)
+                    data.getConfig().getStringList("f." + key + ".invites"));
+
+
+            if (data.getConfig().contains("f." + key + ".permanent")) {
+                faction.permanent = data.getConfig().getBoolean("f." + key + ".permanent");
+            }
+            if (data.getConfig().contains("f." + key + ".frozen")) {
+                faction.frozen = data.getConfig().getBoolean("f." + key + ".frozen");
+            }
+
+            faction.claimChunks = data.getConfig().getInt("f." +key + ".claimedChunks");
             faction.bannedPeople = banned;
             faction.setMotd(data.getConfig().getString("f." +key + ".motd"));
             faction.setDescription(data.getConfig().getString("f." +key + ".description"));
@@ -262,6 +367,7 @@ public class Faction {
                 String[] parms = perm.split("::");
                 faction.settings.getRanks().put(parms[0], FactionRankPermission.fromString(perm));
             }
+
 
             for (FactionData dat : Faction.data) {
                 dat.Load(faction, data);
@@ -291,11 +397,21 @@ public class Faction {
                 flags.add(key + "::" + faction.settings.getFlags().get(key).toString());
             }
 
+            data.getConfig().set("f." + faction.getRegistryName() + ".allies", faction.relationManager.getAllies());
+            data.getConfig().set("f." + faction.getRegistryName() + ".enemies", faction.relationManager.getEnemies());
+            data.getConfig().set("f." + faction.getRegistryName() + ".invites", faction.relationManager.getInvites());
+
+            data.getConfig().set("f." + faction.getRegistryName() + ".permanent", faction.permanent);
+            data.getConfig().set("f." + faction.getRegistryName() + ".frozen", faction.frozen);
+
+
+            data.getConfig().set("f." + faction.getRegistryName() + ".owner", faction.owner.toString());
+            data.getConfig().set("f." + faction.getRegistryName() + ".claimedChunks", faction.claimChunks);
+            data.getConfig().set("f." + faction.getRegistryName() + ".maxPower", faction.powerManager.getMaxPower());
             data.getConfig().set("f." + faction.getRegistryName() + ".displayName", faction.getDisplayName());
             data.getConfig().set("f." + faction.getRegistryName() + ".description", faction.getDescription());
             data.getConfig().set("f." + faction.getRegistryName() + ".motd", faction.getMotd());
-            data.getConfig().set("f." + faction.getRegistryName() + ".power", faction.getPower());
-            data.getConfig().set("f." + faction.getRegistryName() + ".claimedChunks", faction.getClaimedchunks());
+            data.getConfig().set("f." + faction.getRegistryName() + ".power", faction.powerManager.getPower());
             data.getConfig().set("f." + faction.getRegistryName() + ".settings.flags", flags);
             data.getConfig().set("f." + faction.getRegistryName() + ".settings.permissions", _permissions);
             data.getConfig().set("f." + faction.getRegistryName() + ".members", _members.toArray());
@@ -306,18 +422,6 @@ public class Faction {
                 dat.Save(faction, data);
             }
         }
-    }
-
-    public int getPower() {
-        return power;
-    }
-
-    public void setPower(int power) {
-        this.power = power;
-    }
-
-    public int getClaimedchunks() {
-        return claimedchunks;
     }
 
     public String getRegistryName() {
@@ -352,10 +456,6 @@ public class Faction {
         this.motd = motd;
     }
 
-    public void setClaimedchunks(int claimedchunks) {
-        this.claimedchunks = claimedchunks;
-    }
-
     public void setMembers(FactionMember[] members) {
         this.members = members;
     }
@@ -379,4 +479,77 @@ public class Faction {
     public void setRules(String rules) {
         this.rules = rules;
     }
+
+    public void setRegistryName(String registryName) {
+        this.registryName = registryName;
+    }
+
+    public PowerManager getPowerManager() {
+        return powerManager;
+    }
+
+    public void setPowerManager(PowerManager powerManager) {
+        this.powerManager = powerManager;
+    }
+
+    public int getClaimedChunks() {
+        return claimChunks;
+    }
+
+    public void setClaimedChunks(int claimChunks) {
+        this.claimChunks = claimChunks;
+    }
+
+    public UUID getOwner() {
+        return owner;
+    }
+
+    public void setOwner(UUID owner) {
+        this.owner = owner;
+    }
+
+    public Bank getBank() {
+        return bank;
+    }
+
+    public void setBank(Bank bank) {
+        this.bank = bank;
+    }
+
+    public int getClaimChunks() {
+        return claimChunks;
+    }
+
+    public void setClaimChunks(int claimChunks) {
+        this.claimChunks = claimChunks;
+    }
+
+    public RelationManager getRelationManager() {
+        return relationManager;
+    }
+
+    public void setRelationManager(RelationManager relationManager) {
+        this.relationManager = relationManager;
+    }
+
+    public FactionMember[] getMembers() {
+        return members;
+    }
+
+    public boolean isPermanent() {
+        return permanent;
+    }
+
+    public void setPermanent(boolean permanent) {
+        this.permanent = permanent;
+    }
+
+    public boolean isFrozen() {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen) {
+        this.frozen = frozen;
+    }
 }
+

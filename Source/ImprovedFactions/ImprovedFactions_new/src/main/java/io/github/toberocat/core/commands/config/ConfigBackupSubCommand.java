@@ -2,7 +2,6 @@ package io.github.toberocat.core.commands.config;
 
 import io.github.toberocat.MainIF;
 import io.github.toberocat.core.gui.config.backup.ConfigBackupGUI;
-import io.github.toberocat.core.gui.config.configure.ConfigConfigureGUI;
 import io.github.toberocat.core.utility.command.SubCommand;
 import io.github.toberocat.core.utility.language.LangMessage;
 import org.bukkit.entity.Player;

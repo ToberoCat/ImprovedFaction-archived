@@ -5,8 +5,8 @@ import io.github.toberocat.improvedfactions.data.PlayerData;
 import io.github.toberocat.improvedfactions.factions.Faction;
 import io.github.toberocat.improvedfactions.factions.FactionUtils;
 import io.github.toberocat.improvedfactions.language.Language;
-import io.github.toberocat.improvedfactions.utility.Callback;
 import io.github.toberocat.improvedfactions.utility.ChunkUtils;
+import io.github.toberocat.improvedfactions.utility.callbacks.Callback;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,25 +28,18 @@ public class OnEntityDamage implements Listener {
             if (event.getEntity() instanceof Player) {
                 Player target = (Player) event.getEntity();
                 PlayerData targetData = ImprovedFactionsMain.playerData.get(target.getUniqueId());
-                if (targetData.playerFaction != null && attackerData != null && targetData.playerFaction == attackerData.playerFaction) {
-                    boolean result = Callback.GetCallbacks(callbacks, targetData.playerFaction, (Player) event.getEntity(), null);
-                    event.setCancelled(result);
-                    attacker.sendMessage(Language.getPrefix() + "§cCannot attack your faction member");
+
+                if (targetData.playerFaction != null && attackerData != null) {
+                    if (targetData.playerFaction.getRegistryName().equals(attackerData.playerFaction.getRegistryName())) {
+                        event.setCancelled(true);
+                        attacker.sendMessage(Language.getPrefix() + "§cCannot attack your faction member");
+                    } else if (targetData.playerFaction.getRelationManager().getAllies()
+                            .contains(attackerData.playerFaction.getRegistryName())) {
+                        event.setCancelled(true);
+                        attacker.sendMessage(Language.getPrefix() + "§cCannot attack your faction ally member");
+                    }
                 }
-            } else {
-                Faction claimFaction = ChunkUtils.GetFactionClaimedChunk(event.getEntity().getLocation().getChunk());
-                    if (claimFaction == null)
-                        return;
 
-                    if (FactionUtils.getFaction(attacker) == null) {
-                        event.setCancelled(true);
-                        return;
-                    }
-
-                    if (!claimFaction.getRegistryName()
-                            .equals(attackerData.playerFaction.getRegistryName())) {
-                        event.setCancelled(true);
-                    }
             }
         }
     }

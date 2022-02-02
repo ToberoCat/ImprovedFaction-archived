@@ -25,20 +25,29 @@ public class JoinPrivateFactionSubCommand extends SubCommand {
 
     @Override
     public SubCommandSettings getSettings() {
-        return super.getSettings().setAllowAliases(false);
+        return super.getSettings().setAllowAliases(false).setNeedsFaction(SubCommandSettings.NYI.No);
     }
 
     @Override
     protected void CommandExecute(Player player, String[] args) {
+        if (args.length != 1) {
+            CommandExecuteError(CommandExecuteError.NotEnoughArgs, player);
+            return;
+        }
+        JoinPrivate(player, args[0]);
+    }
+
+    public static void JoinPrivate(Player player, String faction) {
         if (FactionUtils.getFaction(player) == null) {
-            if (args.length != 1) {
-                CommandExecuteError(CommandExecuteError.NotEnoughArgs, player);
-                return;
-            }
-            Faction foundFaction = FactionUtils.getFactionByRegistry(args[0]);
+            Faction foundFaction = FactionUtils.getFactionByRegistry(faction);
             if (foundFaction == null)
             {
                 Language.sendMessage(LangMessage.JOIN_ERROR_NO_FACTION_FOUND, player);
+                return;
+            }
+
+            if (foundFaction.getBannedPeople().contains(player.getUniqueId())) {
+                Language.sendMessage(LangMessage.JOIN_ERROR_FACTION_BANNED, player);
                 return;
             }
 
@@ -48,8 +57,6 @@ public class JoinPrivateFactionSubCommand extends SubCommand {
             } else {
                 if (foundFaction.hasMaxMembers())
                     Language.sendMessage(LangMessage.JOIN_FULL, player);
-                else
-                    CommandExecuteError(CommandExecuteError.OtherError, player);
             }
         } else {
             player.sendMessage(Language.getPrefix() + "§cYou have already joined a faction. Please leave before joining another faction");

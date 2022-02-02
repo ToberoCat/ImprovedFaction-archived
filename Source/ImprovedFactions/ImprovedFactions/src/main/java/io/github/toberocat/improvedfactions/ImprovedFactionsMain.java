@@ -3,8 +3,10 @@ package io.github.toberocat.improvedfactions;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.toberocat.improvedfactions.bar.Bar;
 import io.github.toberocat.improvedfactions.commands.FDelCommand;
 import io.github.toberocat.improvedfactions.commands.FDelPCommand;
+import io.github.toberocat.improvedfactions.commands.FJoin;
 import io.github.toberocat.improvedfactions.commands.FactionCommand;
 import io.github.toberocat.improvedfactions.data.PlayerData;
 import io.github.toberocat.improvedfactions.extentions.Extension;
@@ -19,10 +21,12 @@ import io.github.toberocat.improvedfactions.language.Language;
 import io.github.toberocat.improvedfactions.listeners.*;
 import io.github.toberocat.improvedfactions.papi.FactionExpansion;
 import io.github.toberocat.improvedfactions.ranks.Rank;
+import io.github.toberocat.improvedfactions.reports.Report;
 import io.github.toberocat.improvedfactions.tab.FactionCommandTab;
 import io.github.toberocat.improvedfactions.utility.*;
 import io.github.toberocat.improvedfactions.utility.ChunkUtils;
 import io.github.toberocat.improvedfactions.utility.configs.DataManager;
+import io.github.toberocat.improvedfactions.utility.configs.JsonUtility;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -31,16 +35,13 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.xeustechnologies.jcl.JarClassLoader;
 import org.xeustechnologies.jcl.JclObjectFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 public final class ImprovedFactionsMain extends JavaPlugin {
@@ -49,7 +50,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
 
     public static Map<UUID, PlayerData> playerData = new HashMap<>();
 
-    public static String VERSION = "BETAv4.0.0";
+    public static String VERSION = "BETAv5.0.1";
 
     public static UpdateChecker updateChecker;
 
@@ -71,6 +72,8 @@ public final class ImprovedFactionsMain extends JavaPlugin {
     private DataManager chunkData;
 
 
+    public static List<Report> REPORTS = new ArrayList<>();
+
     @Override
     public void onEnable() {
         INSTANCE = this;
@@ -79,6 +82,124 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         //Create extension folder
         File extensionFile = new File(getDataFolder().getPath() + "/Extensions");
         extensionFile.mkdir();
+
+        guiListener = new GuiListener();
+
+        Rank.Init();
+
+        //Data Managers / Config
+        //Language.yml
+        languageData = new DataManager(this, "language.yml");
+        factionData = new DataManager(this, "Data/factions.yml");
+        messagesData = new DataManager(this, "Data/messages.yml");
+        chunkData = new DataManager(this, "Data/chunkData.yml");
+        extConfigData = new DataManager(this, "extConfig.yml");
+        commandData = new DataManager(this, "commands.yml");
+
+        playerMessages = new PlayerMessages(this);
+        //Config defaults
+        getConfig().addDefault("factions.maxMembers", 50);
+        getConfig().addDefault("factions.startClaimPower", 10);
+        getConfig().addDefault("factions.powerPerPlayer", 5);
+        getConfig().addDefault("factions.powerLossPerDeath", 5);
+        getConfig().addDefault("factions.regenerationPerRate", 1);
+        getConfig().addDefault("factions.regenerationRate", 3600000);
+
+        getConfig().addDefault("factions.permanent", false);
+
+
+        getConfig().addDefault("general.noFactionPapi", "None");
+        getConfig().addDefault("general.updateChecker", true);
+        getConfig().addDefault("general.mapViewDistanceW", 7);
+        getConfig().addDefault("general.mapViewDistanceH", 5);
+
+        getConfig().addDefault("general.disableProtectionWhenFirstMemberGetsOnline", true);
+        getConfig().addDefault("general.protectionEnableTime", "900");
+
+        getConfig().addDefault("general.commandDescriptions", true);
+        getConfig().addDefault("general.connectedChunks", false);
+        getConfig().addDefault("general.allowClaimProtection", true);
+        getConfig().addDefault("general.debugMode", false);
+        getConfig().addDefault("general.allowNegativeBalance", false);
+        getConfig().addDefault("general.messageType", "TITLE"); //TITLE, SUBTITLE, ACTIONBAR, ITEM
+        getConfig().addDefault("general.wildnessText", "&2Wildness");
+        getConfig().addDefault("general.safezoneText", "&bSafezone");
+        getConfig().addDefault("general.worlds", new String[] {
+                "world", "world_nether", "world_the_end"
+        });
+
+        getConfig().addDefault("performance.threadingMethode", "SYNC"); // SYNC, THREADS, FUTURE_TASK, COMPLETABLE_FUTURE
+        getConfig().addDefault("performance.stopwatch", false);
+
+        getConfig().options().copyDefaults(true);
+        saveConfig();
+
+        //Language defaults
+        languageData.getConfig().addDefault("prefix", "&c&lFactions:");
+
+        languageData.getConfig().options().copyDefaults(true);
+        languageData.saveConfig();
+
+        //Add commands
+        getServer().getPluginCommand("f").setExecutor(new FactionCommand());
+        getServer().getPluginCommand("f").setTabCompleter(new FactionCommandTab());
+
+        getServer().getPluginCommand("fdel").setExecutor(new FDelCommand());
+        getServer().getPluginCommand("fdel").setTabCompleter(new FDelCommand());
+
+        getServer().getPluginCommand("fdelP").setExecutor(new FDelPCommand());
+        getServer().getPluginCommand("fdelP").setTabCompleter(new FDelPCommand());
+
+        getServer().getPluginCommand("fjoin").setExecutor(new FJoin());
+        getServer().getPluginCommand("fjoin").setTabCompleter(new FJoin());
+
+        //Add listeners
+        getServer().getPluginManager().registerEvents(new OnWorldSaveListener(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerMove(), this);
+        getServer().getPluginManager().registerEvents(new OnChunkEntered(), this);
+
+        getServer().getPluginManager().registerEvents(new OnBlockBreak(), this);
+        getServer().getPluginManager().registerEvents(new OnBlockPlace(), this);
+        getServer().getPluginManager().registerEvents(new OnInteract(), this);
+        getServer().getPluginManager().registerEvents(new OnEntityInteract(), this);
+        getServer().getPluginManager().registerEvents(new OnEntityDamage(), this);
+        getServer().getPluginManager().registerEvents(new ArrowHitListener(), this);
+
+        getServer().getPluginManager().registerEvents(new OnJoin(), this);
+        getServer().getPluginManager().registerEvents(new OnLeave(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerDeathListener(), this);
+
+
+        getServer().getPluginManager().registerEvents(guiListener, this);
+
+        ClickActions.init(this);
+
+        if (Bukkit.getPluginManager().getPlugin("ProtocolLib") == null) {
+            System.out.println("Can't load improved factions. Need to install protocolLib");
+            Bukkit.getPluginManager().disablePlugin(INSTANCE);
+            return;
+        }
+
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            getLogger().info("Found PlaceholderAPI");
+            FactionExpansion.init();
+            new FactionExpansion().register();
+        } else {
+            getLogger().info("Found PlaceholderAPI");
+        }
+
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            protocolManager = ProtocolLibrary.getProtocolManager();
+            signMenuFactory = new SignMenuFactory(this);
+            getLogger().info("IF enabled correctly");
+        }, 1);
+
+        //Load extentions
+        try {
+            ExtensionListLoader.RegenerateExtensionList();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         boolean exit = false;
 
@@ -107,101 +228,6 @@ public final class ImprovedFactionsMain extends JavaPlugin {
             //}
         }
 
-        guiListener = new GuiListener();
-
-        Rank.Init();
-
-        //Data Managers / Config
-        //Language.yml
-        languageData = new DataManager(this, "language.yml");
-        factionData = new DataManager(this, "Data/factions.yml");
-        messagesData = new DataManager(this, "Data/messages.yml");
-        chunkData = new DataManager(this, "Data/chunkData.yml");
-        extConfigData = new DataManager(this, "extConfig.yml");
-        commandData = new DataManager(this, "commands.yml");
-
-        playerMessages = new PlayerMessages(this);
-        //Config defaults
-        getConfig().addDefault("factions.maxMembers", 50);
-        getConfig().addDefault("factions.startClaimPower", 9);
-        getConfig().addDefault("factions.maxClaimPower", 100);
-        getConfig().addDefault("factions.powerPerPlayer", 3);
-
-        getConfig().addDefault("general.noFactionPapi", "None");
-        getConfig().addDefault("general.updateChecker", true);
-        getConfig().addDefault("general.mapViewDistance", 7);
-        getConfig().addDefault("general.commandDescriptions", true);
-        getConfig().addDefault("general.connectedChunks", false);
-        getConfig().addDefault("general.allowClaimProtection", true);
-        getConfig().addDefault("general.debugMode", false);
-        getConfig().addDefault("general.allowNegativeBalance", false);
-        getConfig().addDefault("general.messageType", "TITLE"); //TITLE, SUBTITLE, ACTIONBAR, ITEM
-
-        getConfig().addDefault("performance.threadingMethode", "SYNC"); // SYNC, THREADS, FUTURE_TASK, COMPLETABLE_FUTURE
-        getConfig().addDefault("performance.stopwatch", false);
-
-        getConfig().options().copyDefaults(true);
-        saveConfig();
-
-        //Language defaults
-        languageData.getConfig().addDefault("prefix", "&c&lFactions:");
-
-        languageData.getConfig().options().copyDefaults(true);
-        languageData.saveConfig();
-
-        //Add commands
-        getServer().getPluginCommand("f").setExecutor(new FactionCommand());
-        getServer().getPluginCommand("f").setTabCompleter(new FactionCommandTab());
-
-        getServer().getPluginCommand("fdel").setExecutor(new FDelCommand());
-        getServer().getPluginCommand("fdel").setTabCompleter(new FDelCommand());
-
-        getServer().getPluginCommand("fdelP").setExecutor(new FDelPCommand());
-        getServer().getPluginCommand("fdelP").setTabCompleter(new FDelPCommand());
-
-        //Add listeners
-        getServer().getPluginManager().registerEvents(new OnWorldSaveListener(), this);
-        getServer().getPluginManager().registerEvents(new OnPlayerMove(), this);
-        getServer().getPluginManager().registerEvents(new OnChunkEntered(), this);
-
-        getServer().getPluginManager().registerEvents(new OnBlockBreak(), this);
-        getServer().getPluginManager().registerEvents(new OnBlockPlace(), this);
-        getServer().getPluginManager().registerEvents(new OnInteract(), this);
-        getServer().getPluginManager().registerEvents(new OnEntityInteract(), this);
-        getServer().getPluginManager().registerEvents(new OnEntityDamage(), this);
-        getServer().getPluginManager().registerEvents(new ArrowHitListener(), this);
-
-        getServer().getPluginManager().registerEvents(new OnJoin(), this);
-        getServer().getPluginManager().registerEvents(new OnLeave(), this);
-
-        getServer().getPluginManager().registerEvents(guiListener, this);
-
-        ClickActions.init(this);
-
-        if (Bukkit.getPluginManager().getPlugin("ProtocolLib") == null) {
-            System.out.println("Can't load improved factions. Need to install protocolLib");
-            Bukkit.getPluginManager().disablePlugin(INSTANCE);
-            return;
-        }
-
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            getLogger().info("Found PlaceholderAPI");
-            new FactionExpansion().register();
-        } else {
-            getLogger().info("Found PlaceholderAPI");
-        }
-
-        protocolManager = ProtocolLibrary.getProtocolManager();
-
-        signMenuFactory = new SignMenuFactory(this);
-
-        //Load extentions
-        try {
-            ExtensionListLoader.RegenerateExtensionList();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         ChunkUtils.Init();
 
         //Load language files
@@ -223,6 +249,12 @@ public final class ImprovedFactionsMain extends JavaPlugin {
 
         Language.init(this, langFile);
 
+        if (!setupEconomy()) {
+            getLogger().warning(Language.format("Disabled faction economy! Needs Vault and an Economy plugin installed to enable it"));
+        } else {
+            getLogger().info(Language.format("Enabled faction economy"));
+        }
+
         //Others
         FactionSettings.Init();
         Faction.LoadFactions(this);
@@ -243,17 +275,6 @@ public final class ImprovedFactionsMain extends JavaPlugin {
             AddPlayerData(on);
         }
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (!setupEconomy()) {
-                    getLogger().warning(Language.format("Disabled faction economy! Needs Vault and an Economy plugin installed to enable it"));
-                } else {
-                    getLogger().info(Language.format("Enabled faction economy"));
-                }
-            }
-        }.runTaskLater(this, 5);
-
         int loaded = 0;
         for (ExtensionContainer container : extensions.values()) {
             container.getExtension().Enable(this);
@@ -267,18 +288,42 @@ public final class ImprovedFactionsMain extends JavaPlugin {
             getServer().getConsoleSender().sendMessage("§7[Factions] §aSuccessfully loaded " + loaded +
                     (loaded==1?" extension" : " extensions"));
         }
+
+        File reports = new File(getDataFolder().getPath() + "/Data/reports.json");
+        if (!reports.exists()) {
+            try {
+                reports.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        REPORTS = new ArrayList<>();
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            REPORTS = Arrays.asList(objectMapper.readValue(reports, Report[].class));
+        } catch (IOException e) {
+            getServer().getConsoleSender().sendMessage(
+                    "§7[Factions] §6Reports couldn't get loaded. File is probably empty");
+            REPORTS = new ArrayList<>();
+        }
     }
 
     @Override
     public void onDisable() {
         Faction.SaveFactions(this);
         ChunkUtils.Save();
+        Bar.Disable();
         playerMessages.SavePlayerMessages();
 
         for (String key : extensions.keySet()) {
             ExtensionContainer container = extensions.get(key);
             container.getExtension().Disable(this);
         }
+
+        File reports = new File(getDataFolder().getPath() + "/Data/reports.json");
+        JsonUtility.SaveObject(reports, REPORTS.toArray(new Report[0]));
     }
 
     public DataManager getFactionData() {
