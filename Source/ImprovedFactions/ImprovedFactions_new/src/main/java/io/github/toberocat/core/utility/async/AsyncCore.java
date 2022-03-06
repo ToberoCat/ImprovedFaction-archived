@@ -1,10 +1,12 @@
 package io.github.toberocat.core.utility.async;
 
+import io.github.toberocat.MainIF;
 import io.github.toberocat.core.utility.Utility;
 import io.github.toberocat.core.utility.callbacks.Callback;
 import io.github.toberocat.core.utility.callbacks.ResultCallback;
 import io.github.toberocat.core.utility.callbacks.ReturnCallback;
 import io.github.toberocat.core.utility.exceptions.AlreadyRunException;
+import org.bukkit.Bukkit;
 
 /**
  * Run tasks using the threading settings in config.yml performance section
@@ -24,6 +26,14 @@ public class AsyncCore<T> {
         AsyncCore<T> core = new AsyncCore<>(callback);
         core.thread.start();
         return core;
+    }
+
+    public static void runLater(long miliseconds, Callback callback) {
+        Bukkit.getScheduler().runTaskLater(MainIF.getIF(), () -> Run(callback), Math.round(miliseconds / 1000) * 20L);
+    }
+
+    public static void runLaterSync(long miliseconds, Callback callback) {
+        Bukkit.getScheduler().runTaskLater(MainIF.getIF(), callback::callback, Math.round(miliseconds / 1000) * 20L);
     }
 
     public static <T> AsyncCore<T> Run(Callback callback) {

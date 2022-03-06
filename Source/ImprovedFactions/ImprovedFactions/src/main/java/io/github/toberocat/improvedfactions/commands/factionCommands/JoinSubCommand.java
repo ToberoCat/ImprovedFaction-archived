@@ -46,6 +46,11 @@ public class JoinSubCommand extends SubCommand {
                 return;
             }
 
+            if (foundFaction.isFrozen()) {
+                CommandExecuteError(CommandExecuteError.Frozen, player);
+                return;
+            }
+
             if (foundFaction.Join(player, Rank.fromString(MemberRank.registry))) {
                 Language.sendMessage(LangMessage.JOIN_SUCCESS, player,
                         new Parseable("{faction_displayname}", foundFaction.getDisplayName()));

@@ -28,6 +28,7 @@ public class AdminSubCommand extends SubCommand {
         subCommands.add(new ClearReports());
         subCommands.add(new FrozeAdminCommand());
         subCommands.add(new Permanent());
+        subCommands.add(new ByPassSubCommand());
 
     }
 

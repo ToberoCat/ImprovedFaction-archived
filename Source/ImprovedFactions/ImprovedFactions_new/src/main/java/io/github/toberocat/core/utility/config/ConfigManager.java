@@ -6,25 +6,69 @@ import io.github.toberocat.core.utility.events.ConfigSaveEvent;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-public class ConfigManager {
-    private MainIF plugin;
+import java.util.logging.Level;
 
-    public ConfigManager(MainIF plugin) {
-        this.plugin = plugin;
+public record ConfigManager(MainIF plugin) {
+
+    public void register() {
+        addManager("config.yml", Material.BOOK, "&a&lConfig.yml");
+        addManager("commands.yml", Material.COMMAND_BLOCK, "&a&lCommands.yml");
+
+        addToDefaultConfig("debug.logLevel", new String[]{
+                Level.INFO.toString(), Level.WARNING.toString(), Level.SEVERE.toString()
+        });
+
+        addToDefaultConfig("general.prefix", "&e&lImprovedFactions", Utility.createItem(Material.NAME_TAG, "&e&lPrefix"));
+        addToDefaultConfig("general.printStacktrace", false, Utility.createItem(Material.YELLOW_DYE, "&e&lPrint Stacktrace"));
+        addToDefaultConfig("general.commandDescriptions", true);
+        addToDefaultConfig("general.useSQL", false, Material.COBWEB, "&b&lUse sql",
+                "&8Sql is a database", "&8I would recommend to use it", "&8when you have a lot players", "&8on your server", "", "&6&lPerformance: &cHeavy");
+        addToDefaultConfig("general.colorConsole", true);
+        addToDefaultConfig("general.debugMode", false, Material.COBWEB, "&b&lDebug mode",
+                "&8Get extra infos", "&8Usefull when debugging,", "&8or needing help by moderators");
+
+        addToDefaultConfig("gui.wrapLength", 20);
+
+        addToDefaultConfig("forbidden.checkFactionNames", true);
+        addToDefaultConfig("forbidden.disbandAtPercent", 69.99f);
+        addToDefaultConfig("forbidden.reportAtPercent", 39.99f);
+        addToDefaultConfig("forbidden.checkLeetspeak", true);
+        addToDefaultConfig("forbidden.factionNames", new String[]{
+                "fuck", "ass", "stupid"
+        });
+
+        addToDefaultConfig("power.maxPowerPerPlayer", 5);
+        addToDefaultConfig("power.maxDefaultFaction", 20);
+        addToDefaultConfig("power.regenerationPerHour", 4);
+        addToDefaultConfig("power.memberDeathConsume", 10);
+        addToDefaultConfig("power.chunkPowerConsume", 3);
+        addToDefaultConfig("power.enabled", true);
+
+        addToDefaultConfig("history.territoryChange", false);
+
+        addToDefaultConfig("faction.permanent", false);
+        addToDefaultConfig("faction.maxNameLen", 10);
+        addToDefaultConfig("faction.invitationTimeout", 300, Material.ALLIUM, "&5",
+                "&8Get extra infos", "&8Usefull when debugging,", "&8or needing help by moderators");
+
+        addToDefaultConfig("commands.standby", new String[]{"tellraw @a {\"text\":\"Standby enabled\"}"}, Utility.createItem(Material.COMMAND_BLOCK, "&e&lStandyBy", new String[]{
+                "&8Write a list of commands", "&8That should get executed, when", "&8the plugin goes in standby mode"}));
+        addToDefaultConfig("commands.forbidden", new String[]{"tellraw @a {\"text\":\"This word, {word}, is maybe similar to {similar}. Used: {player_name}, {player_uuid} while {task}. {similarityPer}% similar \"}"}, Utility.createItem(Material.COMMAND_BLOCK, "&e&lForbidden name report", new String[]{
+                "&8Write a list of commands", "&8That should get executed, when", "&8the plugin finds a maybe forbidden word"}));
     }
 
-    public <T> Config<T> AddConfig(String path, T value) {
-        return AddConfig(path, "config.yml", value);
+    public <T> Config<T> addConfig(String path, T value) {
+        return addConfig(path, "config.yml", value);
     }
 
-    public <T> Config AddConfig(String path, String configFile, T value) {
+    public <T> Config addConfig(String path, String configFile, T value) {
         Config config = new Config<T>(path, configFile, null);
         config.write(value).Reload();
         plugin.getConfigMap().put(path, config);
         return plugin.getConfigMap().get(path);
     }
 
-    public <T> Config<T> AddConfig(String path, String configFile, T value, ItemStack icon) {
+    public <T> Config<T> addConfig(String path, String configFile, T value, ItemStack icon) {
         Config config = new Config<T>(path, configFile, icon);
         config.write(value).Reload();
         plugin.getConfigMap().put(path, config);
@@ -36,39 +80,40 @@ public class ConfigManager {
         return plugin.getDataManagers().get(managerPath);
     }
 
-    public DataManager AddManager(String dataManager) {
+    public DataManager addManager(String dataManager) {
         DataManager manager = new DataManager(MainIF.getIF(), dataManager);
         return plugin.getDataManagers().put(dataManager, manager);
     }
 
-    public DataManager AddManager(String dataManager, Material icon, String name, String... lore) {
+    public DataManager addManager(String dataManager, Material icon, String name, String... lore) {
         DataManager manager = new DataManager(MainIF.getIF(), Utility.createItem(icon, name, lore), dataManager);
         return plugin.getDataManagers().put(dataManager, manager);
     }
 
-    public <T> Config<T> AddToDefaultConfig(String path, T defaultValue, ItemStack icon) {
-        return AddToDefaultConfig(path, "config.yml", defaultValue, icon);
-    }
-    public <T> Config<T> AddToDefaultConfig(String path, T defaultValue, Material icon, String title, String... lore) {
-        return AddToDefaultConfig(path, "config.yml", defaultValue, Utility.createItem(icon, title, lore));
+    public <T> Config<T> addToDefaultConfig(String path, T defaultValue, ItemStack icon) {
+        return addToDefaultConfig(path, "config.yml", defaultValue, icon);
     }
 
-    public <T> Config<T> AddToDefaultConfig(String path, T defaultValue) {
-        return AddToDefaultConfig(path, "config.yml", defaultValue, null);
+    public <T> Config<T> addToDefaultConfig(String path, T defaultValue, Material icon, String title, String... lore) {
+        return addToDefaultConfig(path, "config.yml", defaultValue, Utility.createItem(icon, title, lore));
     }
 
-    public <T> Config<T> AddToDefaultConfig(String path, T defaultValue, String configFile) {
-        return AddToDefaultConfig(path, configFile, defaultValue, null);
+    public <T> Config<T> addToDefaultConfig(String path, T defaultValue) {
+        return addToDefaultConfig(path, "config.yml", defaultValue, null);
     }
 
-    public <T> Config<T> AddToDefaultConfig(String path, String configFile, T defaultValue, ItemStack icon) {
+    public <T> Config<T> addToDefaultConfig(String path, T defaultValue, String configFile) {
+        return addToDefaultConfig(path, configFile, defaultValue, null);
+    }
+
+    public <T> Config<T> addToDefaultConfig(String path, String configFile, T defaultValue, ItemStack icon) {
         Config config = new Config<T>(path, configFile, icon);
         config.writeDefault(defaultValue).Reload();
         plugin.getConfigMap().put(path, config);
         return plugin.getConfigMap().get(path);
     }
 
-    public <T> Config<T> AddToDefaultConfig(String path, String configFile, T defaultValue, Material icon, String title, String... lore) {
+    public <T> Config<T> addToDefaultConfig(String path, String configFile, T defaultValue, Material icon, String title, String... lore) {
         Config config = new Config<T>(path, configFile, Utility.createItem(icon, title, lore));
         config.writeDefault(defaultValue).Reload();
         plugin.getConfigMap().put(path, config);
@@ -83,8 +128,7 @@ public class ConfigManager {
         return plugin.getConfigMap().containsKey(path);
     }
 
-    public Config getConfig(String path)
-    {
+    public Config getConfig(String path) {
         if (!plugin.getConfigMap().containsKey(path)) {
             return null;
         }

@@ -1,6 +1,7 @@
 package io.github.toberocat.core.commands.plugin;
 
 import io.github.toberocat.core.utility.command.SubCommand;
+import io.github.toberocat.core.utility.command.SubCommandSettings;
 import io.github.toberocat.core.utility.language.LangMessage;
 import org.bukkit.entity.Player;
 
@@ -11,6 +12,11 @@ public class PluginSubCommand extends SubCommand {
         super("plugin", LangMessage.COMMAND_PLUGIN_DESCRIPTION, true);
         subCommands.add(new PluginDisableSubCommand());
         subCommands.add(new PluginStandbySubCommand());
+    }
+
+    @Override
+    public SubCommandSettings getSettings() {
+        return super.getSettings().setUseWhenFrozen(true);
     }
 
     @Override

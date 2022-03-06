@@ -9,8 +9,9 @@ import java.util.List;
 
 public class ClaimSubCommand extends SubCommand {
     public ClaimSubCommand() {
-        super("claim", LangMessage.COMMAND_FACTION_CLAIM_ONE_DESCRIPTION, true);
+        super("claim", LangMessage.COMMAND_FACTION_CLAIM_ONE_DESCRIPTION, false);
         subCommands.add(new ClaimOneSubCommand());
+        subCommands.add(new ClaimAutoSubCommand());
     }
 
     @Override
@@ -20,7 +21,9 @@ public class ClaimSubCommand extends SubCommand {
 
     @Override
     protected void CommandExecute(Player player, String[] args) {
-
+        if (args.length == 0) {
+            subCommands.get(0).CallSubCommand(player, new String[]{});
+        }
     }
 
     @Override

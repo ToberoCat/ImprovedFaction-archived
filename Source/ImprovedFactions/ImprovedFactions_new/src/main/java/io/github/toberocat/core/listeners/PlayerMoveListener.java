@@ -1,7 +1,11 @@
 package io.github.toberocat.core.listeners;
 
 import io.github.toberocat.MainIF;
+import io.github.toberocat.core.commands.factions.claim.ClaimOneSubCommand;
+import io.github.toberocat.core.commands.factions.unclaim.UnclaimAutoSubCommand;
+import io.github.toberocat.core.commands.factions.unclaim.UnclaimOneSubCommand;
 import io.github.toberocat.core.utility.async.AsyncCore;
+import io.github.toberocat.core.utility.claim.ClaimManager;
 import io.github.toberocat.core.utility.factions.Faction;
 import io.github.toberocat.core.utility.factions.FactionUtility;
 import io.github.toberocat.core.utility.history.History;
@@ -18,9 +22,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 public class PlayerMoveListener implements Listener {
+
+    public static Map<UUID, ClaimAutoType> AUTO_CLAIM_OPERATIONS = new HashMap<>();
+
+    public enum ClaimAutoType { CLAIM, UNCLAIM }
 
     @EventHandler
     public void OnMove(PlayerMoveEvent event) {
@@ -31,6 +42,11 @@ public class PlayerMoveListener implements Listener {
         if (from != to) {
             String fromRegistry = MainIF.getIF().getClaimManager().getFactionRegistry(from);
             String toRegistry = MainIF.getIF().getClaimManager().getFactionRegistry(to);
+
+            if (AUTO_CLAIM_OPERATIONS.containsKey(player.getUniqueId())) {
+                ClaimAutoType operation = AUTO_CLAIM_OPERATIONS.get(player.getUniqueId());
+                claimOp(operation, player);
+            }
 
             if (toRegistry == null && fromRegistry == null) return;
             if (fromRegistry == null) {
@@ -47,16 +63,34 @@ public class PlayerMoveListener implements Listener {
         }
     }
 
+    private void claimOp(ClaimAutoType auto, Player player) {
+        Faction faction = FactionUtility.getPlayerFaction(player);
+
+        if (faction == null) return;
+
+        switch (auto) {
+            case CLAIM -> ClaimOneSubCommand.claim(player);
+            case UNCLAIM -> UnclaimOneSubCommand.unclaim(player);
+        }
+    }
+
     private void display(Player player, String fromRegistry, String toRegistry, Chunk from, Chunk to) {
         History.logTerritorySwitch(player, new Territory(fromRegistry, from),
                 new Territory(toRegistry, to));
 
-        PlayerSettings settings = PlayerSettings.getSettings(player.getUniqueId()).getPaired();
+        PlayerSettings settings = PlayerSettings.getSettings(player.getUniqueId());
         if (!(Boolean) settings.getSetting("displayTitle").getSelected()) return;
 
-        System.out.println(settings.getSetting("titlePosition").getSelected().toString());
+        PlayerSettings.TitlePosition position = PlayerSettings.TitlePosition.values()[(int) settings.getSetting("titlePosition").getSelected()];
 
-        sendTitle(PlayerSettings.TitlePosition.TITLE, player, MainIF.getIF().getClaimManager().getFactionRegistry(to));
+        String registry = MainIF.getIF().getClaimManager().getFactionRegistry(to);
+
+        if (registry == null) {
+            MainIF.getIF().getClaimManager().removeProtection(to);
+            return;
+        }
+
+        sendTitle(position, player, registry);
     }
 
     private void sendTitle(PlayerSettings.TitlePosition pos, Player player, String registry) {
@@ -68,6 +102,12 @@ public class PlayerMoveListener implements Listener {
 
             if (faction != null) {
                 text = faction.getDisplayName();
+            } else if (registry.equals(ClaimManager.SAFEZONE_REGISTRY)) {
+                text = Language.getMessage(LangMessage.TERRITORY_SAFEZONE, player);
+            } else if (registry.equals(ClaimManager.WARZONE_REGISTRY)) {
+                text = Language.getMessage(LangMessage.TERRITORY_WARZONE, player);
+            } else if (registry.equals(ClaimManager.UNCLAIMABLE_REGISTRY)) {
+                return;
             } else {
                 text = Language.getMessage(LangMessage.TERRITORY_WILDERNESS, player);
             }
@@ -87,14 +127,14 @@ public class PlayerMoveListener implements Listener {
                     new Parseable("{relation}", relation)};
 
             switch (pos) {
-                case CHAT -> Language.sendMessage(LangMessage.TERRITORY_ENTERED_CHAT, player);
+                case CHAT -> Language.sendMessage(LangMessage.TERRITORY_ENTERED_CHAT, player, parses);
                 case ACTIONBAR -> player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
                         TextComponent.fromLegacyText(Language.getMessage(LangMessage.TERRITORY_ENTERED_ACTIONBAR,
                                 player, parses)));
                 case TITLE -> player.sendTitle(Language.getMessage(LangMessage.TERRITORY_ENTERED_TITLE,
-                        player, parses), "", 1, 20, 1);
-                case SUBTITLE -> player.sendTitle("", Language.getMessage(LangMessage.TERRITORY_ENTERED_SUBTITLE,
-                        player, parses), 1, 20, 1);
+                        player, parses), "", 5, 20, 5);
+                case SUBTITLE -> player.sendTitle(" ", Language.getMessage(LangMessage.TERRITORY_ENTERED_SUBTITLE,
+                        player, parses), 5, 20, 5);
             }
         });
     }

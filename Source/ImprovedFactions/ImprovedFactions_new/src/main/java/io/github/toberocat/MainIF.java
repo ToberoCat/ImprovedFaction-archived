@@ -1,7 +1,6 @@
 package io.github.toberocat;
 
 import io.github.toberocat.core.commands.FactionCommand;
-import io.github.toberocat.core.extensions.ExtensionObject;
 import io.github.toberocat.core.listeners.GuiListener;
 import io.github.toberocat.core.listeners.PlayerJoinListener;
 import io.github.toberocat.core.listeners.PlayerLeaveListener;
@@ -14,7 +13,9 @@ import io.github.toberocat.core.utility.Result;
 import io.github.toberocat.core.utility.claim.ClaimManager;
 import io.github.toberocat.core.utility.config.ConfigManager;
 import io.github.toberocat.core.utility.data.DataAccess;
-import io.github.toberocat.core.utility.factions.Faction;
+import io.github.toberocat.core.utility.factions.permission.FactionPerm;
+import io.github.toberocat.core.utility.factions.rank.Rank;
+import io.github.toberocat.core.utility.items.ItemCore;
 import io.github.toberocat.core.utility.json.JsonUtility;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
@@ -22,7 +23,9 @@ import io.github.toberocat.core.utility.calender.TimeCore;
 import io.github.toberocat.core.utility.config.Config;
 import io.github.toberocat.core.utility.config.DataManager;
 import io.github.toberocat.core.utility.events.ConfigSaveEvent;
+import io.github.toberocat.core.utility.map.MapHandler;
 import io.github.toberocat.core.utility.messages.MessageSystem;
+import io.github.toberocat.core.utility.settings.FactionSettings;
 import io.github.toberocat.core.utility.settings.PlayerSettings;
 import io.github.toberocat.core.utility.version.Version;
 import io.github.toberocat.versions.nms.NMSFactory;
@@ -30,7 +33,6 @@ import io.github.toberocat.versions.nms.NMSInterface;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -38,8 +40,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalTime;
@@ -97,6 +97,7 @@ public final class MainIF extends JavaPlugin {
 
         for (Player player : getServer().getOnlinePlayers()) {
             Bukkit.getPluginManager().callEvent(new PlayerJoinOnReloadEvent(player));
+            PlayerJoinListener.PLAYER_JOINS.put(player.getUniqueId(), System.currentTimeMillis());
         }
 
         DynamicLoader.enable();
@@ -116,6 +117,7 @@ public final class MainIF extends JavaPlugin {
         backupFile.clear();
         dataManagers.clear();
         configMap.clear();
+        PlayerJoinListener.PLAYER_JOINS.clear();
 
         INSTANCE = null;
     }
@@ -233,30 +235,32 @@ public final class MainIF extends JavaPlugin {
     }
 
     private void saveConfigBackup(Config config) {
-        LogMessage(Level.WARNING, "&cCouldn't save &6" + config.getPath() + "&c. File got saved in config_backup folder. Please restart the plugin so the files can be compared without data loss");
-        File pathAsFile = new File(getDataFolder().getPath() + "/.temp/config_backups");
+        Utility.run(() -> {
+            LogMessage(Level.WARNING, "&cCouldn't save &6" + config.getPath() + "&c. File got saved in config_backup folder. Please restart the plugin so the files can be compared without data loss");
+            File pathAsFile = new File(getDataFolder().getPath() + "/.temp/config_backups");
 
-        if (!Files.exists(Paths.get(pathAsFile.getPath()))) {
-            Utility.run(() -> {
-                if (!pathAsFile.mkdirs()) {
-                    LogMessage(Level.SEVERE, "&cCouldn't save &6" + pathAsFile.getPath() + "&c to backups");
-                }
-            });
-        }
+            if (!Files.exists(Paths.get(pathAsFile.getPath()))) {
+                Utility.run(() -> {
+                    if (!pathAsFile.mkdirs()) {
+                        LogMessage(Level.SEVERE, "&cCouldn't save &6" + pathAsFile.getPath() + "&c to backups");
+                    }
+                });
+            }
 
-        File backupFile = new File(pathAsFile.getPath() + "/" + config.getManager().getFileName() + "_" + LocalTime.now().toSecondOfDay() + ".backup");
+            File backupFile = new File(pathAsFile.getPath() + "/" + config.getManager().getFileName() + "_" + LocalTime.now().toSecondOfDay() + ".backup");
 
-        List<String> paths = null;
-        if (Files.exists(Paths.get(backupFile.getPath()))) {
-            paths = (List<String>) JsonUtility.ReadObject(backupFile, List.class);
-        }
-        paths = paths == null ? new ArrayList<>() : paths;
+            List<String> paths = null;
+            if (Files.exists(Paths.get(backupFile.getPath()))) {
+                paths = (List<String>) JsonUtility.ReadObject(backupFile, List.class);
+            }
+            paths = paths == null ? new ArrayList<>() : paths;
 
-        String toSave = config.getPath() + ":" + config.getValue();
+            String toSave = config.getPath() + ":" + config.getValue();
 
-        paths.add(toSave);
+            paths.add(toSave);
 
-        JsonUtility.SaveObject(backupFile, paths);
+            JsonUtility.SaveObject(backupFile, paths);
+        });
     }
 
     //</editor-fold>
@@ -271,66 +275,25 @@ public final class MainIF extends JavaPlugin {
     }
 
     private void GenerateConfigs() {
-        configManager = new ConfigManager(this);
+        Utility.run(() -> {
+            configManager = new ConfigManager(this);
+            configManager.register();
 
-        configManager.AddManager("config.yml", Material.BOOK, "&a&lConfig.yml");
-        configManager.AddManager("commands.yml", Material.COMMAND_BLOCK, "&a&lCommands.yml");
+            //<editor-fold desc="Loading backups">
+            File backupFolder = new File (getDataFolder().getPath() + "/.temp/backups");
 
+            if (!backupFolder.exists()) backupFolder.mkdirs();
 
-        configManager.AddToDefaultConfig("debug.logLevel", new String[] {
-                Level.INFO.toString(), Level.WARNING.toString(), Level.SEVERE.toString()
+            for (File file : backupFolder.listFiles()) {
+                ArrayList<String> data = (ArrayList<String>) JsonUtility.ReadObject(file, ArrayList.class);
+
+                LogMessage(Level.WARNING, "&cLoaded " + file.getName() + " backup. Please use &7/f config backup&c to decide what should be finally used");
+                backupFile.put(file.getName(), data);
+
+                file.delete();
+            }
+            //</editor-fold>
         });
-
-
-        File backupFolder = new File (getDataFolder().getPath() + "/.temp/backups");
-
-        if (!backupFolder.exists()) backupFolder.mkdirs();
-
-        for (File file : backupFolder.listFiles()) {
-            ArrayList<String> data = (ArrayList<String>) JsonUtility.ReadObject(file, ArrayList.class);
-
-            LogMessage(Level.WARNING, "&cLoaded " + file.getName() + " backup. Please use &7/f config backup&c to decide what should be finally used");
-            backupFile.put(file.getName(), data);
-
-            file.delete();
-        }
-
-
-        configManager.AddToDefaultConfig("general.prefix", "&e&lImprovedFactions", Utility.createItem(Material.NAME_TAG, "&e&lPrefix"));
-        configManager.AddToDefaultConfig("general.printStacktrace", false, Utility.createItem(Material.YELLOW_DYE, "&e&lPrint Stacktrace"));
-        configManager.AddToDefaultConfig("general.commandDescriptions", true);
-        configManager.AddToDefaultConfig("general.useSQL", false, Material.COBWEB, "&b&lUse sql",
-                "&8Sql is a database", "&8I would recommend to use it", "&8when you have a lot players", "&8on your server", "", "&6&lPerformance: &cHeavy");
-        configManager.AddToDefaultConfig("general.colorConsole", true);
-        configManager.AddToDefaultConfig("general.debugMode", false, Material.COBWEB, "&b&lDebug mode",
-                "&8Get extra infos", "&8Usefull when debugging,", "&8or needing help by moderators");
-
-        configManager.AddToDefaultConfig("gui.wrapLength", 20);
-
-        configManager.AddToDefaultConfig("forbidden.checkFactionNames", true);
-        configManager.AddToDefaultConfig("forbidden.disbandAtPercent", 69.99f);
-        configManager.AddToDefaultConfig("forbidden.reportAtPercent", 39.99f);
-        configManager.AddToDefaultConfig("forbidden.checkLeetspeak", true);
-        configManager.AddToDefaultConfig("forbidden.factionNames", new String[] {
-                "fuck", "ass", "stupid"
-        });
-
-        configManager.AddToDefaultConfig("power.maxPowerPerPlayer", 5);
-        configManager.AddToDefaultConfig("power.maxDefaultFaction", 20);
-        configManager.AddToDefaultConfig("power.regenerationPerHour", 4);
-        configManager.AddToDefaultConfig("power.memberDeathConsume", 10);
-        configManager.AddToDefaultConfig("power.chunkPowerConsume", 3);
-        configManager.AddToDefaultConfig("power.enabled", true);
-
-        configManager.AddToDefaultConfig("history.territoryChange", false);
-
-        configManager.AddToDefaultConfig("faction.configManager", false);
-        configManager.AddToDefaultConfig("faction.permanent", false);
-
-        configManager.AddToDefaultConfig("commands.standby", new String[] { "tellraw @a {\"text\":\"Standby enabled\"}" }, Utility.createItem(Material.COMMAND_BLOCK, "&e&lStandyBy", new String[] {
-                "&8Write a list of commands", "&8That should get executed, when", "&8the plugin goes in standby mode"}));
-        configManager.AddToDefaultConfig("commands.forbidden", new String[] { "tellraw @a {\"text\":\"This word, {word}, is maybe similar to {similar}. Used: {player_name}, {player_uuid} while {task}. {similarityPer}% similar \"}" }, Utility.createItem(Material.COMMAND_BLOCK, "&e&lForbidden name report", new String[] {
-                "&8Write a list of commands", "&8That should get executed, when", "&8the plugin finds a maybe forbidden word"}));
     }
 
     private void LoadListeners() {
@@ -342,18 +305,24 @@ public final class MainIF extends JavaPlugin {
 
     private boolean LoadPluginVersion() {
         String sVersion = Bukkit.getBukkitVersion();
-        for (String version : NMSFactory.versions) {
-            if (sVersion.contains(version)) {
-                nms = NMSFactory.create_1_18();
-                nms.EnableInterface();
-                return true;
-            }
+        NMSInterface nms;
+
+        if (sVersion.contains("1.18")) {
+            nms = NMSFactory.create_1_18();
+        } else if (sVersion.contains("1.17")) {
+            nms = NMSFactory.create_1_17();
+        } else if (sVersion.contains("1.16")) {
+            nms = NMSFactory.create_1_16();
+        } else {
+            SaveShutdown("§cCouldn't load ImprovedFactions &6" + VERSION +
+                    "&c. The plugin didn't find a version for your server. Your server version: &6"
+                    + sVersion + "&c. Available versions: &6" + Arrays.toString(NMSFactory.versions));
+            getPluginManager().disablePlugin(this);
+            return false;
         }
-        SaveShutdown("§cCouldn't load ImprovedFactions &6" + VERSION +
-                "&c. The plugin didn't find a version for your server. Your server version: &6"
-                + sVersion + "&c. Available versions: &6" + Arrays.toString(NMSFactory.versions));
-        getPluginManager().disablePlugin(this);
-        return false;
+
+        nms.EnableInterface();
+        return true;
     }
 
     private void LoadPluginDependencies() {
@@ -385,11 +354,18 @@ public final class MainIF extends JavaPlugin {
         if (!Language.init(this, getDataFolder())) return false;
         if (!TimeCore.init()) return false;
         if (!DataAccess.init()) return false;
-        if (!PlayerSettings.init()) return false;
+
+        FactionSettings.register();
+        PlayerSettings.register();
+        FactionPerm.register();
+        ItemCore.register();
+        MapHandler.register();
 
         claimManager = new ClaimManager();
         new FactionUtility();
         new MessageSystem();
+
+        Rank.Init();
 
         return true;
     }

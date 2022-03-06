@@ -23,8 +23,10 @@ public class DescriptionSubCommand extends SubCommand {
             if (args.length >= 1) {
                 Faction faction = FactionUtils.getFaction(player);
 
-                FactionLeaveEvent leaveEvent = new FactionLeaveEvent(faction, player);
-                Bukkit.getPluginManager().callEvent(leaveEvent);
+                if (faction.isFrozen()) {
+                    CommandExecuteError(CommandExecuteError.Frozen, player);
+                    return;
+                }
 
                 StringBuilder builder = new StringBuilder();
                 for (String arg : args) {

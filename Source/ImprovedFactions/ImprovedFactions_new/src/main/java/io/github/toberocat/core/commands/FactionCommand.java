@@ -3,12 +3,13 @@ package io.github.toberocat.core.commands;
 import io.github.toberocat.core.commands.admin.AdminSubCommand;
 import io.github.toberocat.core.commands.config.ConfigSubCommand;
 import io.github.toberocat.core.commands.extension.ExtensionSubCommand;
-import io.github.toberocat.core.commands.factions.CreateFactionSubCommand;
-import io.github.toberocat.core.commands.factions.DeleteFactionSubCommand;
+import io.github.toberocat.core.commands.factions.*;
 import io.github.toberocat.core.commands.factions.claim.ClaimSubCommand;
 import io.github.toberocat.core.commands.factions.relation.RelationSubCommand;
 import io.github.toberocat.core.commands.plugin.PluginSubCommand;
-import io.github.toberocat.core.commands.settings.SettingsSubCommand;
+import io.github.toberocat.core.commands.settings.FactionSettingsSubCommand;
+import io.github.toberocat.core.commands.settings.PlayerSettingsSubCommand;
+import io.github.toberocat.core.commands.zones.UnclaimSubCommand;
 import io.github.toberocat.core.commands.zones.ZoneSubCommand;
 import io.github.toberocat.core.utility.command.SubCommand;
 import io.github.toberocat.core.utility.language.LangMessage;
@@ -33,10 +34,22 @@ public class FactionCommand implements TabExecutor {
         subCommands.add(new ZoneSubCommand());
         subCommands.add(new HelpSubCommand());
         subCommands.add(new AdminSubCommand());
-        subCommands.add(new SettingsSubCommand());
+        subCommands.add(new FactionSettingsSubCommand());
+        subCommands.add(new PlayerSettingsSubCommand());
         subCommands.add(new ClaimSubCommand());
         subCommands.add(new RelationSubCommand());
         subCommands.add(new ExtensionSubCommand());
+        subCommands.add(new LeaveFactionSubCommand());
+        subCommands.add(new WhoSubCommand());
+        subCommands.add(new BanSubCommand());
+        subCommands.add(new UnBanSubCommand());
+        subCommands.add(new KickSubCommand());
+        subCommands.add(new OnlineSubCommand());
+        subCommands.add(new JoinFactionSubCommand());
+        subCommands.add(new MembersSubCommand());
+        subCommands.add(new InviteSubCommand());
+        subCommands.add(new InviteAcceptSubCommand());
+        subCommands.add(new UnclaimSubCommand());
     }
 
     @Override

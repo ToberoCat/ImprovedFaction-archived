@@ -35,6 +35,12 @@ public class ClaimChunkSubCommand extends SubCommand {
 
     @Override
     protected void CommandExecute(Player player, String[] args) {
+        Faction faction = FactionUtils.getFaction(player);
+
+        if (faction.isFrozen()) {
+            CommandExecuteError(CommandExecuteError.Frozen, player);
+            return;
+        }
         if (args.length == 0) {
             subCommands.get(0).CallSubCommand(player, args);
             return;

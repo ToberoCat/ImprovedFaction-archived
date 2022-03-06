@@ -4,6 +4,7 @@ import io.github.toberocat.MainIF;
 import io.github.toberocat.core.utility.Utility;
 import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.command.SubCommand;
+import io.github.toberocat.core.utility.command.SubCommandSettings;
 import io.github.toberocat.core.utility.data.DataAccess;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
@@ -18,7 +19,12 @@ import java.util.logging.Level;
 
 public class AdminHardResetSubCommand extends SubCommand {
     public AdminHardResetSubCommand() {
-        super("reset", LangMessage.COMMAND_ADMIN_HARD_RESET_DESCRIPTION, false);
+        super("reset", "admin.reset", LangMessage.COMMAND_ADMIN_HARD_RESET_DESCRIPTION, false);
+    }
+
+    @Override
+    public SubCommandSettings getSettings() {
+        return super.getSettings().setUseWhenFrozen(true);
     }
 
     @Override

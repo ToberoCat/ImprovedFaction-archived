@@ -10,7 +10,7 @@ public class PersistentDataUtility {
     public static final NamespacedKey PLAYER_FACTION_REGISTRY = new NamespacedKey(MainIF.getIF(), "if-joined-faction");
 
     public static <T extends PersistentDataContainer, E> void write(NamespacedKey key, PersistentDataType type, E value, T object) {
-        object.set(FACTION_CLAIMED_KEY, type, value);
+        object.set(key, type, value);
     }
 
     public static <T extends PersistentDataContainer, E> E read(NamespacedKey key, PersistentDataType type, T object) {

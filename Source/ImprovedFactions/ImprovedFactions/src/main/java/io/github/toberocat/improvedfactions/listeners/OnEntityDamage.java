@@ -1,6 +1,7 @@
 package io.github.toberocat.improvedfactions.listeners;
 
 import io.github.toberocat.improvedfactions.ImprovedFactionsMain;
+import io.github.toberocat.improvedfactions.commands.factionCommands.adminSubCommands.ByPassSubCommand;
 import io.github.toberocat.improvedfactions.data.PlayerData;
 import io.github.toberocat.improvedfactions.factions.Faction;
 import io.github.toberocat.improvedfactions.factions.FactionUtils;
@@ -24,6 +25,8 @@ public class OnEntityDamage implements Listener {
         if (event.getDamager() instanceof Player) {
             if (!ImprovedFactionsMain.getPlugin().getConfig().getBoolean("general.allowClaimProtection")) return;
             Player attacker = (Player) event.getDamager();
+            if (ByPassSubCommand.BYPASS.contains(attacker.getUniqueId())) return;
+
             PlayerData attackerData = ImprovedFactionsMain.playerData.get(attacker.getUniqueId());
             if (event.getEntity() instanceof Player) {
                 Player target = (Player) event.getEntity();

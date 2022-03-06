@@ -1,6 +1,7 @@
 package io.github.toberocat.improvedfactions.listeners;
 
 import io.github.toberocat.improvedfactions.ImprovedFactionsMain;
+import io.github.toberocat.improvedfactions.commands.factionCommands.adminSubCommands.ByPassSubCommand;
 import io.github.toberocat.improvedfactions.data.PlayerData;
 import io.github.toberocat.improvedfactions.factions.Faction;
 import io.github.toberocat.improvedfactions.factions.FactionUtils;
@@ -18,10 +19,16 @@ public class OnEntityInteract implements Listener {
     public void EntityInteract(PlayerInteractEntityEvent event) {
         if (!ImprovedFactionsMain.getPlugin().getConfig().getBoolean("general.allowClaimProtection")) return;
         PlayerData playerData = ImprovedFactionsMain.playerData.get(event.getPlayer().getUniqueId());
+        if (ByPassSubCommand.BYPASS.contains(event.getPlayer().getUniqueId())) return;
 
         Faction claimFaction = ChunkUtils.GetFactionClaimedChunk(event.getRightClicked().getLocation().getChunk());
             if (claimFaction == null)
                 return;
+
+            if (playerData.playerFaction == null){
+                event.setCancelled(true);
+                return;
+            }
 
             if (!claimFaction.getRegistryName()
                     .equals(playerData.playerFaction.getRegistryName())) {
@@ -33,6 +40,8 @@ public class OnEntityInteract implements Listener {
     public void HangingBreak(HangingBreakByEntityEvent event) {
         if (event.getRemover() instanceof Player) {
             if (!ImprovedFactionsMain.getPlugin().getConfig().getBoolean("general.allowClaimProtection")) return;
+            if (ByPassSubCommand.BYPASS.contains(event.getRemover().getUniqueId())) return;
+
             PlayerData playerData = ImprovedFactionsMain.playerData.get(event.getRemover().getUniqueId());
 
             Faction claimFaction = ChunkUtils.GetFactionClaimedChunk(event.getEntity().getLocation().getChunk());

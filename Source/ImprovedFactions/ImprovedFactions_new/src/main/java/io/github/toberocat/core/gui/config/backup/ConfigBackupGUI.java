@@ -18,7 +18,7 @@ public class ConfigBackupGUI extends Gui {
         for (String configFile : MainIF.getIF().getBackupFile().keySet()) {
             ArrayList<String> backUpData = MainIF.getIF().getBackupFile().get(configFile);
 
-            AddSlot(MainIF.getConfigManager().getDataManager(configFile.split("_")[0]).getItemIcon(),
+            addSlot(MainIF.getConfigManager().getDataManager(configFile.split("_")[0]).getItemIcon(),
                     () -> new ConfigBackupConfigSubGUI(player, configFile, backUpData));
         }
     }

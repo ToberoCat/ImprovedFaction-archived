@@ -2,6 +2,8 @@ package io.github.toberocat.core.utility.factions.rank;
 
 import io.github.toberocat.MainIF;
 import io.github.toberocat.core.utility.Utility;
+import io.github.toberocat.core.utility.factions.rank.allies.*;
+import io.github.toberocat.core.utility.factions.rank.members.*;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -26,10 +28,21 @@ public abstract class Rank {
     }
 
     public static void Init() {
-        new AdminRank();
-        new MemberRank();
         new OwnerRank();
-        new NewMemberRank();
+        new AllyOwnerRank();
+
+        new AdminRank();
+        new AllyAdminRank();
+
+        new ModeratorRank();
+        new AllyModeratorRank();
+
+        new ElderRank();
+        new AllyElderRank();
+
+        new MemberRank();
+        new AllyMemberRank();
+
         new GuestRank();
     }
 

@@ -5,6 +5,7 @@ import io.github.toberocat.improvedfactions.factions.Faction;
 import io.github.toberocat.improvedfactions.factions.FactionUtils;
 import io.github.toberocat.improvedfactions.language.LangMessage;
 import io.github.toberocat.improvedfactions.language.Language;
+import io.github.toberocat.improvedfactions.listeners.OnChunkEntered;
 import io.github.toberocat.improvedfactions.utility.ChunkUtils;
 import io.github.toberocat.improvedfactions.utility.TCallback;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -14,6 +15,7 @@ import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,18 +28,23 @@ public class MapSubCommand extends SubCommand {
 
     @Override
     protected void CommandExecute(Player player, String[] args) {
-        if (AUTO_MAPS.contains(player.getUniqueId())) {
-            player.sendMessage(Language.getPrefix() + "§c§lDisabled§f auto map");
-            AUTO_MAPS.remove(player.getUniqueId());
+        if (args.length == 1 && args[0].equals("auto")) {
+            if (AUTO_MAPS.contains(player.getUniqueId())) {
+                player.sendMessage(Language.getPrefix() + "§c§lDisabled§f auto map");
+                AUTO_MAPS.remove(player.getUniqueId());
+            } else {
+                AUTO_MAPS.add(player.getUniqueId());
+                player.sendMessage(Language.getPrefix() + "§a§lEnabled§f auto map");
+                OnChunkEntered.sendMap(player);
+            }
         } else {
-            AUTO_MAPS.add(player.getUniqueId());
-            player.sendMessage(Language.getPrefix() + "§a§lEnabled§f auto map");
+            OnChunkEntered.sendMap(player);
         }
     }
 
     @Override
     protected List<String> CommandTab(Player player, String[] args) {
-        return null;
+        return List.of("auto");
     }
 
     public static void getChunk(Chunk chunk, Player player, TCallback<TextComponent> callback) {

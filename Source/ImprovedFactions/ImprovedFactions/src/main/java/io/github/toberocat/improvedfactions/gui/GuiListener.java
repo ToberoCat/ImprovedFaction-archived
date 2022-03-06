@@ -7,6 +7,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -16,28 +17,34 @@ public class GuiListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(final InventoryClickEvent e) {
-        Iterator<Gui> it = guis.iterator();
-        while (it.hasNext()) {
-            Gui gui = it.next();
-            gui.onInventoryClick(e, it);
-        }
+        try {
+            Iterator<Gui> it = guis.iterator();
+            while (it.hasNext()) {
+                Gui gui = it.next();
+                gui.onInventoryClick(e, it);
+            }
+        } catch (ConcurrentModificationException ignored) {}
     }
 
     @EventHandler
     public void onInventoryDrag(final InventoryDragEvent e) {
-        Iterator<Gui> it = guis.iterator();
-        while (it.hasNext()) {
-            Gui gui = it.next();
-            gui.onInventoryDrag(e, it);
-        }
+        try {
+            Iterator<Gui> it = guis.iterator();
+            while (it.hasNext()) {
+                Gui gui = it.next();
+                gui.onInventoryDrag(e, it);
+            }
+        } catch (ConcurrentModificationException ignored) {}
     }
 
     @EventHandler
     public void onInventoryClose(final InventoryCloseEvent e) {
-        Iterator<Gui> it = guis.iterator();
-        while (it.hasNext()) {
-            Gui gui = it.next();
-            gui.onInventoryClose(e, it);
-        }
+        try {
+            Iterator<Gui> it = guis.iterator();
+            while (it.hasNext()) {
+                Gui gui = it.next();
+                gui.onInventoryClose(e, it);
+            }
+        } catch (ConcurrentModificationException ignored) {}
     }
 }

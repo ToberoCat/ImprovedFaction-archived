@@ -95,7 +95,7 @@ public class OnChunkEntered implements Listener {
         }
     }
 
-    private void sendMap(Player player) {
+    public static void sendMap(Player player) {
         Chunk center = player.getLocation().getChunk();
         int dstH = ImprovedFactionsMain.getPlugin().getConfig().getInt("general.mapViewDistanceW");
         int dstW = ImprovedFactionsMain.getPlugin().getConfig().getInt("general.mapViewDistanceH");

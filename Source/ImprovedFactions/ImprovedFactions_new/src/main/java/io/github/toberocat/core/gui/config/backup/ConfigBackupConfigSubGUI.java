@@ -12,6 +12,7 @@ import io.github.toberocat.core.utility.language.Language;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -28,7 +29,7 @@ public class ConfigBackupConfigSubGUI extends Gui {
                 "&8Remove the backup file", "if you finished checking", "all files"
         })) {
             @Override
-            public void OnClick() {
+            public void OnClick(HumanEntity entity) {
                 MainIF.getIF().getServer().getScheduler().runTaskLater(MainIF.getIF(), () -> {
                     MainIF.getIF().getBackupFile().remove(config);
 
@@ -40,14 +41,14 @@ public class ConfigBackupConfigSubGUI extends Gui {
         settings.getExtraSlots().add(new ObjectPair<>(50, new Slot(Utility.createItem(Material.BARRIER, "§c§lQuit page", new String[]{
                 "Quit to this page and", "go back to last view" })) {
             @Override
-            public void OnClick() {
+            public void OnClick(HumanEntity entity) {
                 MainIF.getIF().getServer().getScheduler().runTaskLater(MainIF.getIF(), () -> new ConfigBackupGUI(player), 1);
             }
         }));
 
         for (String configLine : backup) {
             String[] split = configLine.split(":");
-            AddSlot(MainIF.getConfigManager().getConfig(split[0]).getItemIcon(), () -> {
+            addSlot(MainIF.getConfigManager().getConfig(split[0]).getItemIcon(), () -> {
                 Inventory inv = Bukkit.createInventory(null, 54, Language.getMessage(LangMessage.GUI_BACKUP_CONFIG_TITLE, player) + " - " + config);
                 final Gui gui = new Gui(player, inv, new GUISettings().setQuitIcon(true));
                 gui.getSettings().setQuitCallback(() -> new ConfigBackupConfigSubGUI(player, config, backup));
@@ -64,18 +65,18 @@ public class ConfigBackupConfigSubGUI extends Gui {
 
                 String[] oldDataSplit = oldDataRaw.split("<>");
 
-                gui.AddSlot(Utility.createItem(Material.ENDER_EYE, "&a&lOld", oldDataSplit), 0, 10, () -> {
+                gui.addSlot(Utility.createItem(Material.ENDER_EYE, "&a&lOld", oldDataSplit), 0, 10, () -> {
 
                 });
 
-                gui.AddSlot(Utility.createItem(Material.ENDER_EYE, "&a&lNew", newDataSplit), 0, 16, () -> {
+                gui.addSlot(Utility.createItem(Material.ENDER_EYE, "&a&lNew", newDataSplit), 0, 16, () -> {
 
                 });
-                gui.AddSlot(Utility.createItem(Material.LIME_DYE, "&a&lKeep new", new String[] {"&8Click to keep the newest changes", "&6&lWarning:&8 This remove the old backup"}), 0, 41, () -> {
+                gui.addSlot(Utility.createItem(Material.LIME_DYE, "&a&lKeep new", new String[] {"&8Click to keep the newest changes", "&6&lWarning:&8 This remove the old backup"}), 0, 41, () -> {
                     MainIF.getIF().getBackupFile().get(config).remove(split[0]);
                     new ConfigBackupConfigSubGUI(player, config, backup);
                 });
-                gui.AddSlot(Utility.createItem(Material.YELLOW_DYE, "&a&lKeep old", new String[] {"&8Click to keep the backuped data", "&6&lWarning:&8 This remove the new changes"}), 0, 39, () -> {
+                gui.addSlot(Utility.createItem(Material.YELLOW_DYE, "&a&lKeep old", new String[] {"&8Click to keep the backuped data", "&6&lWarning:&8 This remove the new changes"}), 0, 39, () -> {
                     MainIF.getConfigManager().getConfig(split[0]).write(split[1]);
                     new ConfigBackupConfigSubGUI(player, config, backup);
                 });

@@ -14,7 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Language {
-    private static final Pattern pattern = Pattern.compile("(#[a-fA-F0-9]{6})");
+    private static final Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
 
     private static Map<String, LangMessage> langFiles;
 
@@ -66,6 +66,11 @@ public class Language {
         String locale = player.getLocale();
         LangMessage langMessage = null;
 
+        if (langFiles == null) {
+            player.sendMessage("Error: lang files didn't get initialised. Report it to the ImprovedFactions dev or the server owner");
+            return;
+        }
+
         if (langFiles.containsKey(locale)) {
             langMessage = langFiles.get(locale);
         } else {
@@ -94,7 +99,7 @@ public class Language {
     }
 
     public static String format(String msg) {
-        if (Bukkit.getVersion().contains("1.16") || Bukkit.getVersion().contains("1.17")) {
+        if (Bukkit.getVersion().contains("1.16") || Bukkit.getVersion().contains("1.17") || Bukkit.getVersion().contains("1.18")) {
             Matcher matcher = pattern.matcher(msg);
             while (matcher.find()) {
                 String color = msg.substring(matcher.start(), matcher.end());
@@ -116,5 +121,9 @@ public class Language {
                 .replace("\"", "\\\"")
                 .replace("{", "\\{")
                 .replace("}", "\\}");
+    }
+
+    public static void sendRawMessage(String message, Player player) {
+        player.sendMessage(getPrefix() + format(message));
     }
 }

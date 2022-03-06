@@ -1,10 +1,12 @@
 package io.github.toberocat.core.utility.claim;
 
+import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.data.DataAccess;
 import io.github.toberocat.core.utility.data.PersistentDataUtility;
 import io.github.toberocat.core.utility.dynamic.loaders.DynamicLoader;
 import io.github.toberocat.core.utility.factions.Faction;
 import io.github.toberocat.core.utility.Result;
+import io.github.toberocat.core.utility.factions.FactionUtility;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -23,7 +25,7 @@ public class ClaimManager extends DynamicLoader<Player, Player> {
 
     public static final String UNCLAIMED_CHUNK_REGISTRY = "NONE";
 
-    public final Map<String, List<Dimension>> CLAIMS;
+    public final Map<String, ArrayList<Dimension>> CLAIMS;
 
     public ClaimManager() {
         CLAIMS = new HashMap<>();
@@ -32,8 +34,9 @@ public class ClaimManager extends DynamicLoader<Player, Player> {
             Dimension[] claims = DataAccess.getFile("Chunks", world, Dimension[].class);
             if (claims == null) continue;
 
-            List<Dimension> targetList = Arrays.asList(claims);
-            CLAIMS.put(world, targetList);
+            List<Dimension> rawTargetList = Arrays.asList(claims);
+
+            CLAIMS.put(world, new ArrayList<>(rawTargetList));
         }
 
         for (World world : Bukkit.getWorlds()) {
@@ -60,12 +63,14 @@ public class ClaimManager extends DynamicLoader<Player, Player> {
     }
 
     public Result claimChunk(Faction faction, Chunk chunk) {
+        faction.setClaimedChunks(faction.getClaimedChunks() + 1);
         return protectChunk(faction.getRegistryName(), chunk);
     }
 
     public Result protectChunk(String registry, Chunk chunk) {
-        if (PersistentDataUtility.has(PersistentDataUtility.FACTION_CLAIMED_KEY,
-                PersistentDataType.STRING, chunk.getPersistentDataContainer())) {
+        String claimed = PersistentDataUtility.read(PersistentDataUtility.FACTION_CLAIMED_KEY,
+                PersistentDataType.STRING, chunk.getPersistentDataContainer());
+        if (claimed != null && !claimed.equals(UNCLAIMED_CHUNK_REGISTRY)) {
             return new Result(false).setMessages("CHUNK_ALREADY_PROTECTED", "&cThe chunk you want to claim got already claimed");
         }
 
@@ -92,6 +97,14 @@ public class ClaimManager extends DynamicLoader<Player, Player> {
         String claimRegistry = PersistentDataUtility.read(PersistentDataUtility.FACTION_CLAIMED_KEY,
                 PersistentDataType.STRING,
                 chunk.getPersistentDataContainer());
+
+        AsyncCore.Run(() -> {
+            if (claimRegistry == null) return;
+            Faction faction = FactionUtility.getFactionByRegistry(claimRegistry);
+            if (faction == null) return;
+
+            faction.setClaimedChunks(faction.getClaimedChunks() - 1);
+        });
 
         PersistentDataUtility.write(PersistentDataUtility.FACTION_CLAIMED_KEY,
                 PersistentDataType.STRING,

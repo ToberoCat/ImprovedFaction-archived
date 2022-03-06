@@ -1,16 +1,18 @@
 package io.github.toberocat.core.utility.factions;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.toberocat.MainIF;
 import io.github.toberocat.core.utility.Result;
 import io.github.toberocat.core.utility.Utility;
 import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.data.DataAccess;
-import io.github.toberocat.core.utility.events.ConfigSaveEvent;
 import io.github.toberocat.core.utility.events.faction.*;
+import io.github.toberocat.core.utility.factions.bank.FactionBank;
 import io.github.toberocat.core.utility.factions.members.FactionMemberManager;
+import io.github.toberocat.core.utility.factions.permission.FactionPerm;
 import io.github.toberocat.core.utility.factions.power.PowerManager;
-import io.github.toberocat.core.utility.factions.rank.OwnerRank;
+import io.github.toberocat.core.utility.factions.rank.members.OwnerRank;
 import io.github.toberocat.core.utility.factions.rank.Rank;
 import io.github.toberocat.core.utility.factions.relation.RelationManager;
 import io.github.toberocat.core.utility.language.LangMessage;
@@ -21,6 +23,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
 
 import java.util.*;
 
@@ -29,17 +37,34 @@ public class Faction {
 
     private static final Map<String, Faction> LOADED_FACTIONS = new HashMap<>();
 
-    public enum OpenType { PUBLIC, PRIVATE }
+    public enum OpenType { PUBLIC, INVITE_ONLY, CLOSED }
 
     private PowerManager powerManager;
     private FactionMemberManager factionMemberManager;
     private RelationManager relationManager;
+    private FactionBank factionBank;
+    private FactionPerm factionPerm;
 
     private OpenType openType;
-    private String displayName, registryName;
+    private String displayName, registryName, motd;
+    private String[] description;
     private boolean frozen, permanent;
+    private String createdAt;
 
+    private UUID owner;
+
+    private int claimedChunks;
+
+    /**
+     * It creates a new Faction object, and adds it to the LOADED_FACTIONS map
+     *
+     * @param displayName The name of the faction.
+     * @param owner The player who created the faction
+     * @return A Result object.
+     */
     public static Result<Faction> CreateFaction(String displayName, Player owner) {
+        if (displayName.length() >= (Integer) MainIF.getConfigManager().getValue("faction.maxNameLen"))
+            return Result.failure("OVER_MAX_LEN", "You reached the maximum length for a faction name");
         String registryName = ChatColor.stripColor(displayName.replaceAll("[^a-zA-Z0-9]", " "));
 
         if (MainIF.getConfigManager().getValue("forbidden.checkFactionNames")) {
@@ -92,7 +117,7 @@ public class Faction {
 
             if (!result.isSuccess()) return result;
         }
-        Faction newFaction = new Faction(displayName, registryName, OpenType.PUBLIC);
+        Faction newFaction = new Faction(displayName, registryName, owner.getUniqueId(), OpenType.PUBLIC);
         boolean canCreate = Utility.callEvent(new FactionCreateEvent(newFaction, owner));
         if (!canCreate) {
             DataAccess.removeFile("Factions", registryName);
@@ -117,17 +142,27 @@ public class Faction {
     public Faction() {
     }
 
-    private Faction(String displayName, String registryName, OpenType openType) {
+    private Faction(String displayName, String registryName, UUID owner, OpenType openType) {
         super();
         this.openType = openType;
         this.registryName = registryName;
         this.displayName = displayName;
+
         this.powerManager = new PowerManager(this,
                MainIF.getConfigManager().getValue("power.maxDefaultFaction"));
         this.factionMemberManager = new FactionMemberManager(this);
         this.relationManager = new RelationManager(this);
+        this.factionBank = new FactionBank();
+        this.factionPerm = new FactionPerm();
+
         this.frozen = false;
-        this.permanent = MainIF.getConfigManager().getValue("faction.permanent");
+        this.permanent = Boolean.TRUE.equals(MainIF.getConfigManager().getValue("faction.permanent"));
+        this.description = new String[] { "&eCool &cfaction" };
+        this.motd = "New faction";
+        this.claimedChunks = 0;
+        this.owner = owner;
+        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
+        this.createdAt = fmt.print(new LocalDateTime());
     }
 
     /**
@@ -146,6 +181,12 @@ public class Faction {
         return factionMemberManager.join(player);
     }
 
+    /**
+     * Let a player leave the faction
+     *
+     * @param player The player who is leaving the faction
+     * @return A Result object.
+     */
     public Result leave(Player player) {
         if (frozen) return Result.failure("FROZEN", "This faction is frozen. You can't leave");
 
@@ -158,6 +199,12 @@ public class Faction {
         return factionMemberManager.leave(player);
     }
 
+    /**
+     * Kick a player from the faction
+     *
+     * @param player The player to kick
+     * @return A Result object.
+     */
     public Result kick(OfflinePlayer player) {
         if (frozen) return Result.failure("FROZEN", "This faction is frozen. You can't kick");
 
@@ -166,14 +213,25 @@ public class Faction {
                 "Couldn't kick §e" + player.getName());
 
         if (player.isOnline()) {
-            Language.sendMessage(LangMessage.FACTION_KICKED, player.getPlayer());
+            Language.sendMessage(LangMessage.FACTION_KICKED, player.getPlayer(),
+                    new Parseable("{faction_display}", displayName));
         } else {
-            MessageSystem.sendMessage(player.getUniqueId(), Language.getMessage(LangMessage.FACTION_KICKED, "en_us"));
+            MessageSystem.sendMessage(player.getUniqueId(), Language.getMessage(LangMessage.FACTION_KICKED,
+                    "en_us", new Parseable("{faction_display}", displayName)));
         }
 
-        return factionMemberManager.kick(player.getUniqueId());
+        Result result = factionMemberManager.kick(player.getUniqueId());
+
+        if (!result.isSuccess()) return result;
+        return new Result(true).setMessages("KICKED", "You kicked &e" + player.getName());
     }
 
+    /**
+     * Ban a player from the faction
+     *
+     * @param player The player to ban
+     * @return A Result object.
+     */
     public Result ban(OfflinePlayer player) {
         if (frozen) return Result.failure("FROZEN", "This faction is frozen. You can't ban");
 
@@ -187,9 +245,18 @@ public class Faction {
             MessageSystem.sendMessage(player.getUniqueId(), Language.getMessage(LangMessage.FACTION_KICKED, "en_us"));
         }
 
-        return factionMemberManager.ban(player.getUniqueId());
+        Result result = factionMemberManager.ban(player.getUniqueId());
+
+        if (!result.isSuccess()) return result;
+        return new Result(true).setMessages("BANNED", "You banned &e" + player.getName());
     }
 
+    /**
+     * This function will unban a player from the faction
+     *
+     * @param player The player to unban
+     * @return A Result object.
+     */
     public Result unban(OfflinePlayer player) {
         if (frozen) return Result.failure("FROZEN", "This faction is frozen. You can't unban");
 
@@ -200,17 +267,26 @@ public class Faction {
         return factionMemberManager.pardon(player.getUniqueId());
     }
 
-    public void delete() {
+    /**
+     * This function kicks all members of the faction and then removes the faction from the LOADED_FACTIONS list
+     *
+     * @return A Result object.
+     */
+    public Result delete() {
+        if (frozen) return Result.failure("FROZEN", "This faction is frozen. You can't kick");
         AsyncCore.Run(() -> {
             boolean canDelete = Utility.callEvent(new FactionDeleteEvent(this));
             if (!canDelete) return;
 
-            for (UUID member : factionMemberManager.getMembers()) {
+            ArrayList<UUID> memberCopy = new ArrayList<>(factionMemberManager.getMembers());
+            for (UUID member : memberCopy) {
                 kick(Bukkit.getOfflinePlayer(member));
             }
+
             LOADED_FACTIONS.remove(registryName);
             DataAccess.removeFile("Factions", registryName);
         });
+        return Result.success();
     }
 
     //<editor-fold desc="Getters and Setters">
@@ -280,6 +356,62 @@ public class Faction {
 
     public void setPermanent(boolean permanent) {
         this.permanent = permanent;
+    }
+
+    public String[] getDescription() {
+        return description;
+    }
+
+    public void setDescription(String[] description) {
+        this.description = description;
+    }
+
+    public String getMotd() {
+        return motd;
+    }
+
+    public void setMotd(String motd) {
+        this.motd = motd;
+    }
+
+    public int getClaimedChunks() {
+        return claimedChunks;
+    }
+
+    public void setClaimedChunks(int claimedChunks) {
+        this.claimedChunks = claimedChunks;
+    }
+
+    public FactionBank getFactionBank() {
+        return factionBank;
+    }
+
+    public void setFactionBank(FactionBank factionBank) {
+        this.factionBank = factionBank;
+    }
+
+    public UUID getOwner() {
+        return owner;
+    }
+
+    public void setOwner(UUID owner) {
+        this.owner = owner;
+    }
+
+    public FactionPerm getFactionPerm() {
+        return factionPerm;
+    }
+
+    public void setFactionPerm(FactionPerm factionPerm) {
+        this.factionPerm = factionPerm;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 
     //</editor-fold>

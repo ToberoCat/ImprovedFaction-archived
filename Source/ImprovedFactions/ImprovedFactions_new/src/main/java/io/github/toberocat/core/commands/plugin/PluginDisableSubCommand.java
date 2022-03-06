@@ -12,12 +12,12 @@ import java.util.logging.Level;
 
 public class PluginDisableSubCommand extends SubCommand {
     public PluginDisableSubCommand() {
-        super("disable", LangMessage.COMMAND_PLUGIN_DISABLE_DESCRIPTION, false);
+        super("disable", "plugin.disable", LangMessage.COMMAND_PLUGIN_DISABLE_DESCRIPTION, false);
     }
 
     @Override
     public SubCommandSettings getSettings() {
-        return super.getSettings().setCanUseInConsole(true);
+        return super.getSettings().setCanUseInConsole(true).setUseWhenFrozen(true);
     }
 
     @Override

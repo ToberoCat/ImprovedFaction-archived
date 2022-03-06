@@ -23,6 +23,11 @@ public class DeleteSubCommand extends SubCommand {
         if (FactionUtils.getFaction(player) != null) {
             Faction faction = FactionUtils.getFaction(player);
 
+            if (faction.isFrozen()) {
+                CommandExecuteError(CommandExecuteError.Frozen, player);
+                return;
+            }
+
             if (FactionUtils.getPlayerRank(faction, player).isAdmin()) {
                 FactionDeleteEvent deleteEvent = new FactionDeleteEvent(faction, player);
                 Bukkit.getPluginManager().callEvent(deleteEvent);

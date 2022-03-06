@@ -5,6 +5,7 @@ import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.data.DataAccess;
 import io.github.toberocat.core.utility.data.PersistentDataUtility;
 import io.github.toberocat.core.utility.dynamic.loaders.PlayerJoinLoader;
+import io.github.toberocat.core.utility.factions.members.FactionMemberManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -26,11 +27,14 @@ public class FactionUtility extends PlayerJoinLoader {
 
     @Override
     protected void loadPlayer(Player player) {
-        MainIF.LogMessage(Level.INFO, "Loading player");
         String registry = getPlayerFactionRegistry(player);
         if (registry == null) return; // Player not in faction
         if (Faction.getLoadedFactions().containsKey(registry)) return; // Faction already loaded
-        if (!doesFactionExist(registry)) return; // Faction got deleted
+        if (!doesFactionExist(registry)) { // Faction got deleted
+            PersistentDataUtility.write(PersistentDataUtility.PLAYER_FACTION_REGISTRY, PersistentDataType.STRING,
+                    FactionMemberManager.NO_FACTION, player.getPersistentDataContainer());
+            return;
+        }
 
         getFactionByRegistry(registry);
     }
@@ -77,11 +81,13 @@ public class FactionUtility extends PlayerJoinLoader {
      * @return A boolean, if the player is in a faction
      */
     public static boolean isInFaction(Player player) {
-        return PersistentDataUtility.has(PersistentDataUtility.PLAYER_FACTION_REGISTRY, PersistentDataType.STRING, player.getPersistentDataContainer());
+        String faction = PersistentDataUtility.read(PersistentDataUtility.PLAYER_FACTION_REGISTRY, PersistentDataType.STRING, player.getPersistentDataContainer());
+        if (faction == null) return false;
+        return !faction.equals(FactionMemberManager.NO_FACTION);
     }
 
     public static String getPlayerFactionRegistry(Player player) {
-        if (isInFaction(player)) return null;
+        if (!isInFaction(player)) return null;
         return PersistentDataUtility.read(PersistentDataUtility.PLAYER_FACTION_REGISTRY, PersistentDataType.STRING,
                         player.getPersistentDataContainer());
     }
@@ -92,7 +98,7 @@ public class FactionUtility extends PlayerJoinLoader {
      * @return The faction the player is in
      */
     public static Faction getPlayerFaction(Player player) {
-        if (isInFaction(player)) return null;
+        if (!isInFaction(player)) return null;
 
         return getFactionByRegistry(PersistentDataUtility
                 .read(PersistentDataUtility.PLAYER_FACTION_REGISTRY, PersistentDataType.STRING,
@@ -103,6 +109,8 @@ public class FactionUtility extends PlayerJoinLoader {
      * This will return the faction you were searching for. Will also load the faction if not loaded
      */
     public static Faction getFactionByRegistry(String registry) {
+        if (registry == null) return null;
+
         if (Faction.getLoadedFactions().containsKey(registry)) return Faction.getLoadedFactions().get(registry);
         if (!doesFactionExist(registry)) return null;
 

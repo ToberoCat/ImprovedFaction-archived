@@ -1,6 +1,11 @@
 package io.github.toberocat.improvedfactions.factions;
 
 import io.github.toberocat.improvedfactions.ImprovedFactionsMain;
+import io.github.toberocat.improvedfactions.commands.factionCommands.BanSubCommand;
+import io.github.toberocat.improvedfactions.commands.factionCommands.InviteSubCommand;
+import io.github.toberocat.improvedfactions.commands.factionCommands.KickSubCommand;
+import io.github.toberocat.improvedfactions.gui.FactionRanksGui;
+import io.github.toberocat.improvedfactions.gui.FactionSettingsGui;
 import io.github.toberocat.improvedfactions.gui.Flag;
 import io.github.toberocat.improvedfactions.language.Language;
 import io.github.toberocat.improvedfactions.ranks.AdminRank;
@@ -9,8 +14,12 @@ import io.github.toberocat.improvedfactions.ranks.OwnerRank;
 import io.github.toberocat.improvedfactions.ranks.Rank;
 import io.github.toberocat.improvedfactions.utility.SignMenuFactory;
 import io.github.toberocat.improvedfactions.utility.Utils;
+import net.wesjd.anvilgui.AnvilGUI;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -59,34 +68,113 @@ public class FactionSettings {
         FLAGS.put(Faction.RENAME_FLAG, new Flag(Flag.FlagType.Function, Material.OAK_SIGN, "&aRename faction",
                 "&8Rename your faction", (faction, player, object) -> {
                     try {
-                        SignMenuFactory.Menu menu = ImprovedFactionsMain.getPlugin().getSignMenuFactory().newMenu(Arrays.asList(faction.getDisplayName()))
-                                .reopenIfFail(true)
-                                .response((p, strings) -> {
-                                    faction.setDisplayName(Language.format(strings[0]));
-                                    return true;
-                                });
-                        menu.open(player);
-                    } catch (NullPointerException e) {
-                        //ToDo: Fix protocolLib bug
+                        new AnvilGUI.Builder()
+                                .onClose((user) -> {
+                                    new FactionSettingsGui(player, ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction);
+                                })
+                                .onComplete((user, text) -> {
+                                    faction.setDisplayName(text);
+                                    return AnvilGUI.Response.close();
+                                })
+                                .text(ChatColor.stripColor(faction.getDisplayName()))
+                                .itemLeft(new ItemStack(Material.GRAY_BANNER))
+                                .title("§eChange your display name")
+                                .plugin(ImprovedFactionsMain.getPlugin())
+                                .open(player);
+                    } catch (Exception e) {
                         player.sendMessage("Please use §8/f settings rename");
                     }
                 }));
         FLAGS.put(Faction.MOTD, new Flag(Flag.FlagType.Function, Material.BIRCH_SIGN, "&aFaction motd",
                 "&8Set your faction motd", (faction, player, object) -> {
                     try {
-                        SignMenuFactory.Menu menu = ImprovedFactionsMain.getPlugin().getSignMenuFactory().newMenu(Arrays.asList(faction.getMotd()))
-                                .reopenIfFail(true)
-                                .response((p, strings) -> {
-                                    faction.setMotd(Language.format(strings[0]));
-                                    return true;
-                                });
-                        menu.open(player);
-                    } catch (NullPointerException e) {
-                        //ToDo: Fix protocolLib bug
+                        new AnvilGUI.Builder()
+                                .onClose((user) -> new FactionSettingsGui(player, ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction))
+                                .onComplete((user, text) -> {
+                                    faction.setMotd(Language.format(text));
+                                    return AnvilGUI.Response.close();
+                                })
+                                .text(ChatColor.stripColor(faction.getMotd()))
+                                .itemLeft(new ItemStack(Material.BLACK_BANNER))
+                                .title("§eChange your motd name")
+                                .plugin(ImprovedFactionsMain.getPlugin())
+                                .open(player);
+                    } catch (Exception e) {
                         player.sendMessage("Please use §8/f settings motd");
                     }
-
                 }));
+
+        FLAGS.put("OPEN_RANK", new Flag(Flag.FlagType.Function, Material.BLUE_DYE, "&aRanks",
+                        "&8Configure your faction rank permissions", ((faction, player, object) -> {
+            new FactionRanksGui(player, ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction);
+        })));
+
+        FLAGS.put("INVITE", new Flag(Flag.FlagType.Function, Material.GREEN_BANNER, "&aInvite",
+                "&8Invite a player", ((faction, player, object) -> {
+            new AnvilGUI.Builder()
+                    .onClose((user) -> {
+                        new FactionSettingsGui(player, ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction);
+                    })
+                    .onComplete((user, text) -> {
+                        InviteSubCommand.invite(user, Bukkit.getPlayer(text));
+                        return AnvilGUI.Response.close();
+                    })
+                    .text("Player name")
+                    .itemLeft(new ItemStack(Material.GREEN_BANNER))
+                    .title("§eInvite player")
+                    .plugin(ImprovedFactionsMain.getPlugin())
+                    .open(player);
+                })));
+        FLAGS.put("BAN", new Flag(Flag.FlagType.Function, Material.RED_BANNER, "&aBan",
+                "&8Ban a player", ((faction, player, object) -> {
+            new AnvilGUI.Builder()
+                    .onClose((user) -> {
+                        new FactionSettingsGui(player, ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction);
+                    })
+                    .onComplete((user, text) -> {
+                        BanSubCommand.ban(user, Bukkit.getOfflinePlayer(text));
+                        return AnvilGUI.Response.close();
+                    })
+                    .text("Member name")
+                    .itemLeft(new ItemStack(Material.RED_BANNER))
+                    .title("§eBan player")
+                    .plugin(ImprovedFactionsMain.getPlugin())
+                    .open(player);
+            })));
+
+        FLAGS.put("KICK", new Flag(Flag.FlagType.Function, Material.ORANGE_BANNER, "&aKick",
+                "&8Kick a player", ((faction, player, object) -> {
+            new AnvilGUI.Builder()
+                    .onClose((user) -> {
+                        new FactionSettingsGui(player, ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction);
+                    })
+                    .onComplete((user, text) -> {
+                        KickSubCommand.kick(user, Bukkit.getOfflinePlayer(text));
+                        return AnvilGUI.Response.close();
+                    })
+                    .text("Member name")
+                    .itemLeft(new ItemStack(Material.ORANGE_BANNER))
+                    .title("§eKick player")
+                    .plugin(ImprovedFactionsMain.getPlugin())
+                    .open(player);
+        })));
+
+        FLAGS.put("DESCRIPTION", new Flag(Flag.FlagType.Function, Material.BLUE_BANNER, "&aDescription",
+                "&8Change your faction description. &7Tipp: &8Use colorcodes", ((faction, player, object) -> {
+            new AnvilGUI.Builder()
+                    .onClose((user) -> {
+                        new FactionSettingsGui(player, ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction);
+                    })
+                    .onComplete((user, text) -> {
+                        faction.setDescription(Language.format(text));
+                        return AnvilGUI.Response.close();
+                    })
+                    .text(faction.getDescription())
+                    .itemLeft(new ItemStack(Material.BLUE_BANNER))
+                    .title("§eChange description")
+                    .plugin(ImprovedFactionsMain.getPlugin())
+                    .open(player);
+        })));
 
         for (String key : FLAGS.keySet()) {
             ImprovedFactionsMain.getPlugin().getConfig().addDefault("factions.flags." + key, true);

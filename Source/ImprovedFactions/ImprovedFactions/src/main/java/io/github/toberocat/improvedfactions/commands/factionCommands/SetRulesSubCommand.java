@@ -28,6 +28,11 @@ public class SetRulesSubCommand extends SubCommand {
     protected void CommandExecute(Player player, String[] args) {
         Faction faction = FactionUtils.getFaction(player);
 
+        if (faction.isFrozen()) {
+            CommandExecuteError(CommandExecuteError.Frozen, player);
+            return;
+        }
+
         faction.setRules(String.join(" ", args));
         Language.sendMessage(LangMessage.RULES_SET_COMMAND, player);
     }

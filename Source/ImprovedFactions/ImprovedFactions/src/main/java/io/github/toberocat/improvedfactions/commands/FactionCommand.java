@@ -1,6 +1,7 @@
 package io.github.toberocat.improvedfactions.commands;
 
 import io.github.toberocat.improvedfactions.commands.factionCommands.*;
+import io.github.toberocat.improvedfactions.commands.factionCommands.adminSubCommands.WarnSubCommand;
 import io.github.toberocat.improvedfactions.commands.factionCommands.relations.*;
 import io.github.toberocat.improvedfactions.language.LangMessage;
 import io.github.toberocat.improvedfactions.language.Language;
@@ -41,7 +42,8 @@ public class FactionCommand implements CommandExecutor {
         subCommands.add(new RulesSubCommand());
         subCommands.add(new SetRulesSubCommand());
         subCommands.add(new AdminSubCommand());
-        subCommands.add(new InfoSubCommand());
+        subCommands.add(new WhoSubCommand());
+        subCommands.add(new WarnSubCommand());
 
         subCommands.add(new AllySubCommand());
         subCommands.add(new AllyAcceptSubCommand());
@@ -61,9 +63,16 @@ public class FactionCommand implements CommandExecutor {
         if (sender instanceof Player) {
             //Player
             Player player = (Player) sender;
-            if (args.length == 0) {
+            if (!player.isOp() && !ImprovedFactionsMain.getPlugin().getConfig().getList("general.worlds")
+                    .contains(player.getLocation().getWorld().getName())) {
+                Language.sendRawMessage("This world is disabled", player);
                 return false;
             }
+            if (args.length == 0) {
+                Language.sendRawMessage("Can't use without parameters", player);
+                return false;
+            }
+
 
             if(!SubCommand.CallSubCommands(subCommands, player, args)) {
                 Language.sendMessage(LangMessage.THIS_COMMAND_DOES_NOT_EXIST, player);

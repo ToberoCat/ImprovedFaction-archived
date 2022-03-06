@@ -24,6 +24,11 @@ public class LeaveSubCommand extends SubCommand {
         if (FactionUtils.getFaction(player) != null) {
             Faction faction = FactionUtils.getFaction(player);
 
+            if (faction.isFrozen()) {
+                CommandExecuteError(CommandExecuteError.Frozen, player);
+                return;
+            }
+
             boolean canLeave = faction.isPermanent() || !FactionUtils.getPlayerRank(faction, player).toString().equals(OwnerRank.registry);
 
             if (canLeave) {

@@ -15,12 +15,15 @@ public class Bank {
 
     public Bank(Faction faction) {
         this.faction = faction;
-        economy = ImprovedFactionsMain.getPlugin().getEconomy();
-        if (economy != null) {
-            ImprovedFactionsMain.getPlugin().getEconomy().createBank(faction.getRegistryName(),
-                    Bukkit.getOfflinePlayer(faction.getOwner()));
-            hasBank = true;
-        }
+        hasBank = false;
+        Bukkit.getScheduler().runTaskLater(ImprovedFactionsMain.getPlugin(), () -> {
+            economy = ImprovedFactionsMain.getPlugin().getEconomy();
+            if (economy != null) {
+                ImprovedFactionsMain.getPlugin().getEconomy().createBank(faction.getRegistryName(),
+                        Bukkit.getOfflinePlayer(faction.getOwner()));
+                hasBank = true;
+            }
+        }, 1);
     }
 
     //<editor-fold desc="Deposit">

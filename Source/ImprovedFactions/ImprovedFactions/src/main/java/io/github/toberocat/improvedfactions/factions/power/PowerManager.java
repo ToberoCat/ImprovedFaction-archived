@@ -36,7 +36,8 @@ public class PowerManager {
 
     public void removeFactionMember() {
         maxPower -= ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.powerPerPlayer");
-        power -= ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.powerPerPlayer");
+        power -= Math.max(ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.minPower"),
+                ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.powerPerPlayer"));
     }
 
     public void claimChunk() {
@@ -50,7 +51,8 @@ public class PowerManager {
     }
 
     public void playerDeath() {
-        power -= ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.powerLossPerDeath");
+        power -= Math.max(ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.minPower"),
+                ImprovedFactionsMain.getPlugin().getConfig().getInt("factions.powerLossPerDeath"));
 
         for (FactionMember member : faction.getMembers()) {
             if (member == null) continue;

@@ -110,6 +110,13 @@ public class Faction {
         return settings.getRanks().get(perm);
     }
 
+    /**
+     * This function checks if the player has the permission
+     *
+     * @param player The player who is trying to use the command
+     * @param permission The permission you want to check.
+     * @return A boolean.
+     */
     public boolean hasPermission(Player player, String permission) {
         FactionMember member = getFactionMember(player);
         if (member == null) {
@@ -429,7 +436,7 @@ public class Faction {
     }
 
     public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+        this.displayName = Language.format(displayName).replaceAll(" ", "");
     }
 
     public String getDescription() {

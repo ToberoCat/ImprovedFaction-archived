@@ -3,6 +3,7 @@ package io.github.toberocat.core.utility.command;
 import io.github.toberocat.MainIF;
 import io.github.toberocat.core.debug.Debugger;
 import io.github.toberocat.core.utility.async.AsyncCore;
+import io.github.toberocat.core.utility.config.Config;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
 import io.github.toberocat.core.utility.language.Parseable;
@@ -39,7 +40,7 @@ public abstract class SubCommand {
 
         if (getSettings().isAllowAliases()) {
             MainIF.getConfigManager().getDataManager("commands.yml").getConfig().addDefault("commands." + permission + ".aliases", new ArrayList<String>());
-            MainIF.getConfigManager().getDataManager("commands.yml").getConfig().addDefault("commands." + permission + ".costs", new ArrayList<String>());
+            MainIF.getConfigManager().getDataManager("commands.yml").getConfig().addDefault("commands." + permission + ".costs", 0);
             MainIF.getConfigManager().getDataManager("commands.yml").getConfig().options().copyDefaults(true);
             MainIF.getConfigManager().getDataManager("commands.yml").saveConfig();
         }
@@ -53,8 +54,8 @@ public abstract class SubCommand {
         subCommands = new ArrayList<>();
 
         if (getSettings().isAllowAliases()) {
-            MainIF.getConfigManager().AddToDefaultConfig("commands." + permission + ".aliases", new ArrayList<String>(),"commands.yml");
-            MainIF.getConfigManager().AddToDefaultConfig("commands." + permission + ".costs", 0, "commands.yml");
+            MainIF.getConfigManager().addToDefaultConfig("commands." + permission + ".aliases", new ArrayList<String>(),"commands.yml");
+            MainIF.getConfigManager().addToDefaultConfig("commands." + permission + ".costs", 0, "commands.yml");
         }
     }
 
@@ -104,7 +105,7 @@ public abstract class SubCommand {
             }
         }
 
-        if (!(Boolean) PlayerSettings.getSettings(player.getUniqueId()).getPaired().getPlayerSetting()
+        if (!(Boolean) PlayerSettings.getSettings(player.getUniqueId()).getPlayerSetting()
                 .get("hideCommandDescription").getSelected() && results.size() == 1) {
             for (SubCommand command : subCommands) {
                 if  (results.contains(command.getSubCommand())) {
@@ -178,7 +179,7 @@ public abstract class SubCommand {
                             }
                         }
                     } else {
-                        SendCommandExecuteError(CommandExecuteError.NoPermission, player);
+                        sendCommandExecuteError(CommandExecuteError.NoPermission, player);
                     }
                 } else {
                     CommandExecute(null, args);
@@ -188,8 +189,8 @@ public abstract class SubCommand {
         });
     }
 
-    // * Callbacks
-    public void SendCommandExecuteError(CommandExecuteError error, Player player) {
+    // Callbacks
+    public void sendCommandExecuteError(CommandExecuteError error, Player player) {
         switch (error) {
             case NoPermission -> player.sendMessage(Language.getPrefix() + "§cYou don't have enough permissions to use this command. Permission: faction.commands." + permission);
             case NoFaction -> player.sendMessage(Language.getPrefix() + "§cYou need to be in a faction to use this command");
@@ -202,7 +203,7 @@ public abstract class SubCommand {
         }
     }
 
-    public void SendCommandExecuteError(Player player, String errorMessage) {
+    public void sendCommandExecuteError(String errorMessage, Player player) {
         Language.sendMessage(LangMessage.ERROR_GENERAL, player, new Parseable("{error}", errorMessage));
     }
 
@@ -217,7 +218,18 @@ public abstract class SubCommand {
     }
 
     private int getCosts() {
-        return MainIF.getConfigManager().getValue("commands." + permission + ".costs");
+        if (!MainIF.getConfigManager().containConfig("commands." + permission + ".costs") &&
+                MainIF.getConfigManager().getConfig("commands." + permission + ".costs") != null) {
+            return 0;
+        }
+
+        Config<Integer> configCost = MainIF.getConfigManager().getConfig("commands." + permission + ".costs");
+        if (configCost == null) {
+            Debugger.logWarning("&fCan't get &ecommands." + permission + ".costs&f. Maybe wrong format or path doesn't exist");
+            return 0;
+        }
+
+        return configCost.getValue();
     }
 
     protected boolean CommandDisplayCondition(Player player, String[] args) {

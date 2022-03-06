@@ -12,7 +12,6 @@ import io.github.toberocat.improvedfactions.language.Language;
 import io.github.toberocat.improvedfactions.language.Parseable;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.craftbukkit.libs.org.apache.commons.codec.language.bm.Lang;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -29,17 +28,7 @@ public class KickSubCommand extends SubCommand {
             Faction faction = FactionUtils.getFaction(player);
             if (FactionUtils.getPlayerRank(faction, player).isAdmin()) {
                 if (args.length >= 1) {
-                    OfflinePlayer p = Bukkit.getOfflinePlayer(args[0]);
-                    if (faction.Leave(p)) {
-                        Language.sendMessage(LangMessage.KICK_SUCCESS_SENDER, player,
-                                new Parseable("{kicked}", p.getName()));
-                        Language.sendMessage(LangMessage.KICK_SUCCESS_RECEIVER, player);
-
-                        Language.sendMessage(LangMessage.KICK_SUCCESS_RECEIVER, player, new Parseable("{faction_displayname}", faction.getDescription()));
-
-                    } else {
-                        CommandExecuteError(CommandExecuteError.OtherError, player);
-                    }
+                    kick(player, Bukkit.getOfflinePlayer(args[0]));
                 } else {
                     CommandExecuteError(CommandExecuteError.NotEnoughArgs, player);
                 }
@@ -48,6 +37,29 @@ public class KickSubCommand extends SubCommand {
             }
         } else {
             CommandExecuteError(CommandExecuteError.NoFactionPermission, player);
+        }
+    }
+
+    public static void kick(Player player, OfflinePlayer kicked) {
+        Faction faction = FactionUtils.getFaction(player);
+
+        if (faction.isFrozen()) {
+            CommandExecuteError(CommandExecuteError.Frozen, player);
+            return;
+        }
+
+        if (faction.Leave(kicked)) {
+            Language.sendMessage(LangMessage.KICK_SUCCESS_SENDER, player,
+                    new Parseable("{kicked}", kicked.getName()));
+            if (kicked.isOnline()) {
+                player = kicked.getPlayer();
+                Language.sendMessage(LangMessage.KICK_SUCCESS_RECEIVER, player);
+
+                Language.sendMessage(LangMessage.KICK_SUCCESS_RECEIVER, player, new Parseable("{faction_displayname}", faction.getDisplayName()));
+            }
+
+        } else {
+            CommandExecuteError(CommandExecuteError.OtherError, player);
         }
     }
 

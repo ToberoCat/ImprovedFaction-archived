@@ -14,7 +14,7 @@ import java.util.List;
 
 public class AllyRelationSubCommand extends SubCommand {
     public AllyRelationSubCommand() {
-        super("ally", LangMessage.COMMAND_RELATION_ALLY_DESCRIPTION, false);
+        super("ally", "relation.ally", LangMessage.COMMAND_RELATION_ALLY_DESCRIPTION, false);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class AllyRelationSubCommand extends SubCommand {
     protected void CommandExecute(Player player, String[] args) {
         Faction addressedFaction = FactionUtility.getFactionByRegistry(args[0]);
         if (addressedFaction == null) {
-            SendCommandExecuteError(player, "&cCannot find given faction. Check spelling");
+            sendCommandExecuteError("&cCannot find given faction. Check spelling", player);
             return;
         }
 

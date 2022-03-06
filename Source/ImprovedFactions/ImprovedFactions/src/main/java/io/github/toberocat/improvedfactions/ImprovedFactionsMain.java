@@ -22,6 +22,7 @@ import io.github.toberocat.improvedfactions.listeners.*;
 import io.github.toberocat.improvedfactions.papi.FactionExpansion;
 import io.github.toberocat.improvedfactions.ranks.Rank;
 import io.github.toberocat.improvedfactions.reports.Report;
+import io.github.toberocat.improvedfactions.reports.Warn;
 import io.github.toberocat.improvedfactions.tab.FactionCommandTab;
 import io.github.toberocat.improvedfactions.utility.*;
 import io.github.toberocat.improvedfactions.utility.ChunkUtils;
@@ -35,6 +36,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.checkerframework.checker.units.qual.A;
 import org.xeustechnologies.jcl.JarClassLoader;
 import org.xeustechnologies.jcl.JclObjectFactory;
 
@@ -73,6 +75,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
 
 
     public static List<Report> REPORTS = new ArrayList<>();
+    public static Warn WARNS;
 
     @Override
     public void onEnable() {
@@ -104,6 +107,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         getConfig().addDefault("factions.powerLossPerDeath", 5);
         getConfig().addDefault("factions.regenerationPerRate", 1);
         getConfig().addDefault("factions.regenerationRate", 3600000);
+        getConfig().addDefault("factions.minPower", 0);
 
         getConfig().addDefault("factions.permanent", false);
 
@@ -168,6 +172,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new OnJoin(), this);
         getServer().getPluginManager().registerEvents(new OnLeave(), this);
         getServer().getPluginManager().registerEvents(new OnPlayerDeathListener(), this);
+        getServer().getPluginManager().registerEvents(new BlockExplosionListener(), this);
 
 
         getServer().getPluginManager().registerEvents(guiListener, this);
@@ -175,7 +180,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         ClickActions.init(this);
 
         if (Bukkit.getPluginManager().getPlugin("ProtocolLib") == null) {
-            System.out.println("Can't load improved factions. Need to install protocolLib");
+            System.out.println("§cCan't load improved factions. Need to install protocolLib");
             Bukkit.getPluginManager().disablePlugin(INSTANCE);
             return;
         }
@@ -249,11 +254,13 @@ public final class ImprovedFactionsMain extends JavaPlugin {
 
         Language.init(this, langFile);
 
-        if (!setupEconomy()) {
-            getLogger().warning(Language.format("Disabled faction economy! Needs Vault and an Economy plugin installed to enable it"));
-        } else {
-            getLogger().info(Language.format("Enabled faction economy"));
-        }
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            if (!setupEconomy()) {
+                getLogger().warning(Language.format("Disabled faction economy! Needs Vault and an Economy plugin installed to enable it"));
+            } else {
+                getLogger().info(Language.format("Enabled faction economy"));
+            }
+        }, 0);
 
         //Others
         FactionSettings.Init();
@@ -298,7 +305,17 @@ public final class ImprovedFactionsMain extends JavaPlugin {
             }
         }
 
+        File warns = new File(getDataFolder().getPath() + "/Data/warns.json");
+        if (!warns.exists()) {
+            try {
+                warns.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         REPORTS = new ArrayList<>();
+        WARNS = new Warn();
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -307,6 +324,15 @@ public final class ImprovedFactionsMain extends JavaPlugin {
             getServer().getConsoleSender().sendMessage(
                     "§7[Factions] §6Reports couldn't get loaded. File is probably empty");
             REPORTS = new ArrayList<>();
+        }
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            WARNS = objectMapper.readValue(warns, Warn.class);
+        } catch (IOException e) {
+            getServer().getConsoleSender().sendMessage(
+                    "§7[Factions] §6Warns couldn't get loaded. File is probably empty");
+            WARNS = new Warn();
         }
     }
 
@@ -324,6 +350,9 @@ public final class ImprovedFactionsMain extends JavaPlugin {
 
         File reports = new File(getDataFolder().getPath() + "/Data/reports.json");
         JsonUtility.SaveObject(reports, REPORTS.toArray(new Report[0]));
+
+        File warns = new File(getDataFolder().getPath() + "/Data/warns.json");
+        JsonUtility.SaveObject(warns, WARNS);
     }
 
     public DataManager getFactionData() {
@@ -424,13 +453,15 @@ public final class ImprovedFactionsMain extends JavaPlugin {
     }
 
     private boolean setupEconomy() {
-        if (ImprovedFactionsMain.getPlugin().getServer().getPluginManager().getPlugin("Vault") == null) {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
-        RegisteredServiceProvider<Economy> eco = ImprovedFactionsMain.getPlugin().getServer().getServicesManager().getRegistration(Economy.class);
-        if (eco != null) {
-            economy = eco.getProvider();
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager()
+                .getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
         }
+        economy = rsp.getProvider();
         return economy != null;
     }
 

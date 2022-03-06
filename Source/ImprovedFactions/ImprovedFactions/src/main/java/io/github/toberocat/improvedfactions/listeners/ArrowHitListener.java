@@ -1,6 +1,7 @@
 package io.github.toberocat.improvedfactions.listeners;
 
 import io.github.toberocat.improvedfactions.ImprovedFactionsMain;
+import io.github.toberocat.improvedfactions.commands.factionCommands.adminSubCommands.ByPassSubCommand;
 import io.github.toberocat.improvedfactions.data.PlayerData;
 import io.github.toberocat.improvedfactions.factions.Faction;
 import io.github.toberocat.improvedfactions.factions.FactionUtils;
@@ -13,7 +14,9 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 public class ArrowHitListener implements Listener {
 
     public void ArrayHit(ProjectileHitEvent event) {
-        if (event.getEntity() instanceof Arrow) {
+        if (ByPassSubCommand.BYPASS.contains(event.getHitEntity().getUniqueId()) ||
+                ByPassSubCommand.BYPASS.contains(event.getHitEntity().getUniqueId())) return;
+            if (event.getEntity() instanceof Arrow) {
             if (!ImprovedFactionsMain.getPlugin().getConfig().getBoolean("general.allowClaimProtection")) return;
             if (event.getHitEntity() != null && event.getHitEntity() instanceof Player) {
                 PlayerData playerData = ImprovedFactionsMain.playerData.get(event.getHitEntity().getUniqueId());

@@ -9,26 +9,15 @@ import io.github.toberocat.improvedfactions.factions.FactionUtils;
 import io.github.toberocat.improvedfactions.language.LangMessage;
 import io.github.toberocat.improvedfactions.language.Language;
 import io.github.toberocat.improvedfactions.utility.callbacks.ExceptionCallback;
-import net.minecraft.network.chat.IChatBaseComponent;
-import net.minecraft.network.protocol.game.PacketPlayOutChat;
-import org.apache.commons.lang.Validate;
 import org.bukkit.*;
-import org.bukkit.craftbukkit.libs.org.apache.commons.codec.binary.Base64;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Utils {
     public static ItemStack createItem(final Material material, final String name, final String[] lore) {
@@ -53,16 +42,13 @@ public class Utils {
     }
 
     public static ItemStack getSkull(String url, int count, String name, String... lore) {
-        if (Bukkit.getVersion().contains("1.18")) {
-            return createItem(Material.BARRIER, name, lore);
-        }
         ItemStack head = new ItemStack(Material.PLAYER_HEAD, count);
         if(url.isEmpty())return head;
 
 
         SkullMeta headMeta = (SkullMeta) head.getItemMeta();
         GameProfile profile = new GameProfile(UUID.randomUUID(), null);
-        byte[] encodedData = Base64.encodeBase64(String.format("{textures:{SKIN:{url:\"%s\"}}}", url).getBytes());
+        byte[] encodedData = Base64.getEncoder().encode(String.format("{textures:{SKIN:{url:\"%s\"}}}", url).getBytes());
         profile.getProperties().put("textures", new Property("textures", new String(encodedData)));
         Field profileField = null;
         try {
@@ -121,6 +107,8 @@ public class Utils {
     }
 
     public static void ClaimChunk(Faction faction, Player player) {
+        if (player == null) return;
+
         Chunk chunk = player.getLocation().getChunk();
 
         faction.ClaimChunk(chunk, status -> {

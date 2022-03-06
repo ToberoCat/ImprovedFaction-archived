@@ -3,6 +3,7 @@ package io.github.toberocat.core.commands.zones;
 import io.github.toberocat.MainIF;
 import io.github.toberocat.core.utility.claim.ClaimManager;
 import io.github.toberocat.core.utility.command.SubCommand;
+import io.github.toberocat.core.utility.command.SubCommandSettings;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
 import org.bukkit.entity.Player;
@@ -11,7 +12,12 @@ import java.util.List;
 
 public class SafeZoneSubCommand extends SubCommand {
     public SafeZoneSubCommand() {
-        super("safezone", LangMessage.COMMAND_ZONES_SAFEZONE_DESCRIPTION, false);
+        super("safezone", "zones.safezone", LangMessage.COMMAND_ZONES_SAFEZONE_DESCRIPTION, false);
+    }
+
+    @Override
+    public SubCommandSettings getSettings() {
+        return super.getSettings().setUseWhenFrozen(true);
     }
 
     @Override

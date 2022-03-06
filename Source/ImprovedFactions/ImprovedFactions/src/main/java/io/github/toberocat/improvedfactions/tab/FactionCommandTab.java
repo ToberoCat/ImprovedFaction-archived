@@ -1,7 +1,9 @@
 package io.github.toberocat.improvedfactions.tab;
 
+import io.github.toberocat.improvedfactions.ImprovedFactionsMain;
 import io.github.toberocat.improvedfactions.commands.FactionCommand;
 import io.github.toberocat.improvedfactions.commands.subCommands.SubCommand;
+import io.github.toberocat.improvedfactions.language.Language;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -22,6 +24,10 @@ public class FactionCommandTab implements TabCompleter {
 
         Player player = (Player) sender;
 
+        if (!player.isOp() && !ImprovedFactionsMain.getPlugin().getConfig().getList("general.worlds")
+                .contains(player.getLocation().getWorld().getName())) {
+            return null;
+        }
         //Display results
 
         List<String> arguments = SubCommand.CallSubCommandsTab(FactionCommand.subCommands, player, args);

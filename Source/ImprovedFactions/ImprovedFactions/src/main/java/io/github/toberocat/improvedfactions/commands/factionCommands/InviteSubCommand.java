@@ -2,6 +2,7 @@ package io.github.toberocat.improvedfactions.commands.factionCommands;
 
 import io.github.toberocat.improvedfactions.ImprovedFactionsMain;
 import io.github.toberocat.improvedfactions.commands.subCommands.SubCommand;
+import io.github.toberocat.improvedfactions.commands.subCommands.SubCommandSettings;
 import io.github.toberocat.improvedfactions.event.faction.FactionLeaveEvent;
 import io.github.toberocat.improvedfactions.factions.Faction;
 import io.github.toberocat.improvedfactions.factions.FactionUtils;
@@ -25,38 +26,43 @@ public class InviteSubCommand extends SubCommand {
     }
 
     @Override
+    public SubCommandSettings getSettings() {
+        return super.getSettings().setNeedsFaction(SubCommandSettings.NYI.Yes);
+    }
+
+    @Override
     protected void CommandExecute(Player player, String[] args) {
-        if (FactionUtils.getFaction(player) != null) {
-            Faction faction = FactionUtils.getFaction(player);
-            if (faction.hasPermission(player, Faction.INVITE_PERMISSION)) {
-                if (args.length == 1) {
-                    Player playerToInvite = Bukkit.getPlayer(args[0]);
-
-                    if (playerToInvite != null && playerToInvite.isOnline()) {
-                        Language.sendMessage(LangMessage.INVITE_SUCCESS_SENDER, player,
-                                new Parseable("{player_receive}", playerToInvite.getDisplayName()));
-
-                        TextComponent textComponent = new TextComponent(Language.getPrefix() + Language.parse(
-                                Language.getMessage(LangMessage.INVITE_SUCCESS_RECEIVER, playerToInvite),
-                                new Parseable[] {
-                                        new Parseable("{faction_displayname}", faction.getDisplayName())
-                                }));
-                        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/f join" + JoinPrivateFactionSubCommand.joinUUID + " " + faction.getRegistryName()));
-                        textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Language.getMessage(LangMessage.INVITE_HOVER_EVENT, playerToInvite)).create()));
-                        ImprovedFactionsMain.playerData.get(playerToInvite.getUniqueId())
-                                .invitations.add(faction.getRegistryName());
-                        playerToInvite.spigot().sendMessage(textComponent);
-                    } else {
-                        CommandExecuteError(CommandExecuteError.PlayerNotFound, player);
-                    }
-                } else {
-                    CommandExecuteError(CommandExecuteError.NotEnoughArgs, player);
-                }
-            } else {
-                CommandExecuteError(CommandExecuteError.NoFactionPermission, player);
-            }
+        if (args.length == 1) {
+            invite(player, Bukkit.getPlayer(args[0]));
         } else {
-            CommandExecuteError(CommandExecuteError.NoFaction, player);
+            CommandExecuteError(CommandExecuteError.NotEnoughArgs, player);
+        }
+    }
+
+    public static void invite(Player player, Player playerToInvite) {
+        Faction faction = FactionUtils.getFaction(player);
+
+        if (faction.isFrozen()) {
+            CommandExecuteError(CommandExecuteError.Frozen, player);
+            return;
+        }
+
+        if (playerToInvite != null && playerToInvite.isOnline()) {
+            Language.sendMessage(LangMessage.INVITE_SUCCESS_SENDER, player,
+                    new Parseable("{player_receive}", playerToInvite.getDisplayName()));
+
+            TextComponent textComponent = new TextComponent(Language.getPrefix() + Language.parse(
+                    Language.getMessage(LangMessage.INVITE_SUCCESS_RECEIVER, playerToInvite),
+                    new Parseable[] {
+                            new Parseable("{faction_displayname}", faction.getDisplayName())
+                    }));
+            textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/f join" + JoinPrivateFactionSubCommand.joinUUID + " " + faction.getRegistryName()));
+            textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Language.getMessage(LangMessage.INVITE_HOVER_EVENT, playerToInvite)).create()));
+            ImprovedFactionsMain.playerData.get(playerToInvite.getUniqueId())
+                    .invitations.add(faction.getRegistryName());
+            playerToInvite.spigot().sendMessage(textComponent);
+        } else {
+            CommandExecuteError(CommandExecuteError.PlayerNotFound, player);
         }
     }
 

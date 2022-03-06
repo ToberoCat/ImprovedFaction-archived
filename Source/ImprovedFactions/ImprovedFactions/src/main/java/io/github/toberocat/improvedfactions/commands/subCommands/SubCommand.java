@@ -14,7 +14,7 @@ public abstract class SubCommand {
 
     private static SubCommand lastSubCommand;
 
-    protected enum CommandExecuteError { NoPermission, NoFaction, NotEnoughArgs, OtherError, PlayerNotFound, OnlyAdminCommand, NoFactionPermission, NoFactionNeed };
+    protected enum CommandExecuteError { Frozen, NoPermission, NoFaction, NotEnoughArgs, OtherError, PlayerNotFound, OnlyAdminCommand, NoFactionPermission, NoFactionNeed };
 
     protected final String subCommand;
     protected final String permission;
@@ -151,10 +151,10 @@ public abstract class SubCommand {
     }
 
     // * Callbacks
-    public void CommandExecuteError(CommandExecuteError error, Player player) {
+    public static void CommandExecuteError(CommandExecuteError error, Player player) {
         switch (error) {
             case NoPermission:
-                player.sendMessage(Language.getPrefix() + "§cYou don't have enough permissions to use this command. Permission: faction.commands." + permission);
+                player.sendMessage(Language.getPrefix() + "§cYou don't have enough permissions to use this command");
                 break;
             case NoFaction:
                 player.sendMessage(Language.getPrefix() + "§cYou need to be in a faction to use this command");
@@ -163,7 +163,7 @@ public abstract class SubCommand {
                 player.sendMessage(Language.getPrefix() + "§cThis command needs more arguments. Please check the usage if you don't know what arguments");
                 break;
             case OtherError:
-                player.sendMessage(Language.getPrefix() + "§cAn error occurred while running the "+subCommand+" command");
+                player.sendMessage(Language.getPrefix() + "§cAn error occurred while running the command");
                 break;
             case PlayerNotFound:
                 player.sendMessage(Language.getPrefix() + "§cCoudn't find player");
@@ -176,6 +176,9 @@ public abstract class SubCommand {
                 break;
             case NoFactionNeed:
                 player.sendMessage(Language.getPrefix() + "§cYou don't need to be in a faction to use this command");
+                break;
+            case Frozen:
+                Language.sendRawMessage("This action isn't allowed. Your faction got frozen. Please tell a admin if you think that's not right", player);
                 break;
         }
     }

@@ -21,6 +21,11 @@ public class SettingsSubCommand extends SubCommand {
     protected void CommandExecute(Player player, String[] args) {
         if (FactionUtils.getFaction(player) != null) {
             Faction faction = FactionUtils.getFaction(player);
+            if (faction.isFrozen()) {
+                CommandExecuteError(CommandExecuteError.Frozen, player);
+                return;
+            }
+
             if (args.length == 0) {
                 if (FactionUtils.getPlayerRank(faction, player).isAdmin()) {
                     new FactionSettingsGui(player, ImprovedFactionsMain.playerData.get(player.getUniqueId()).playerFaction);

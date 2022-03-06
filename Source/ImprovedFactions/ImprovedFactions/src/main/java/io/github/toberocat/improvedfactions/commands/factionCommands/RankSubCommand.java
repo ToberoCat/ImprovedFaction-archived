@@ -26,6 +26,12 @@ public class RankSubCommand extends SubCommand {
     protected void CommandExecute(Player player, String[] args) {
         if (FactionUtils.getFaction(player) != null) {
             Faction faction = FactionUtils.getFaction(player);
+
+            if (faction.isFrozen()) {
+                CommandExecuteError(CommandExecuteError.Frozen, player);
+                return;
+            }
+
             if (FactionUtils.getPlayerRank(faction, player).isAdmin()) {
                 if(!SubCommand.CallSubCommands(subCommands, player, args)) {
                     player.sendMessage(Language.getPrefix() + "§cThis command doesn't exist");

@@ -34,6 +34,11 @@ public class JoinPrivateFactionSubCommand extends SubCommand {
             CommandExecuteError(CommandExecuteError.NotEnoughArgs, player);
             return;
         }
+        Faction faction = FactionUtils.getFactionByRegistry(args[0]);
+        if (faction.isFrozen()) {
+            CommandExecuteError(CommandExecuteError.Frozen, player);
+            return;
+        }
         JoinPrivate(player, args[0]);
     }
 

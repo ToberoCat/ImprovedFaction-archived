@@ -105,5 +105,4 @@ public class FactionUtils {
         }
         return null;
     }
-
 }

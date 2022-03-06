@@ -16,7 +16,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class DownloadGUI extends Gui {
                     loreList.add("");
                     loreList.addAll(Utility.wrapLines(extension.getDescription(), "§7"));
 
-                    AddSlot(Utility.createItem(extension.getGuiIcon(), "§e" +
+                    addSlot(Utility.createItem(extension.getGuiIcon(), "§e" +
                             extension.getDisplayName(), loreList.toArray(String[]::new)), () -> {
                         try {
                             ExtensionDownloader.DownloadExtension(extension, new ExtensionDownloadCallback() {

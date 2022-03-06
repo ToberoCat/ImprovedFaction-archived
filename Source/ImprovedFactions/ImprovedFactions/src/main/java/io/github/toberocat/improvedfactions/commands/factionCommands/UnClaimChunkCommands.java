@@ -26,12 +26,18 @@ public class UnClaimChunkCommands extends SubCommand {
 
     @Override
     protected void CommandExecute(Player player, String[] args) {
+        Faction faction = FactionUtils.getFaction(player);
+
+        if (faction.isFrozen()) {
+            CommandExecuteError(CommandExecuteError.Frozen, player);
+            return;
+        }
+
         if (args.length == 0) {
             subCommands.get(0).CallSubCommand(player, args);
             return;
         }
         if (FactionUtils.getFaction(player) != null) {
-            Faction faction = FactionUtils.getFaction(player);
             if (faction.hasPermission(player, Faction.UNCLAIM_CHUNK_PERMISSION)) {
                 if(!SubCommand.CallSubCommands(subCommands, player, args)) {
                     player.sendMessage(Language.getPrefix() + "§cThis command doesn't exist");

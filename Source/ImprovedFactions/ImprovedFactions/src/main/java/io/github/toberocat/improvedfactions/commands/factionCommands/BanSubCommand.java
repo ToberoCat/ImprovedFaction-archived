@@ -29,27 +29,37 @@ public class BanSubCommand extends SubCommand {
 
     @Override
     protected void CommandExecute(Player player, String[] args) {
-        Faction faction = FactionUtils.getFaction(player);
         if (args.length == 1) {
-            Player banned = Bukkit.getPlayer(args[0]);
+            OfflinePlayer banned = Bukkit.getOfflinePlayer(args[0]);
             if (banned == null) {
                 CommandExecuteError(CommandExecuteError.PlayerNotFound, player);
                 return;
             }
-            UUID uuid = banned.getUniqueId();
-            if (!faction.getBannedPeople().contains(uuid)) {
-                faction.getBannedPeople().add(uuid);
-                Language.sendMessage(LangMessage.BANNED_PLAYER_COMMAND_SUCCESS, player,
-                        new Parseable("{banned}", args[0]));
-                faction.Leave(banned);
 
-                Language.sendMessage(LangMessage.BANNED_PLAYER_COMMAND_LEAVE, banned,
-                        new Parseable("{faction_displayName}", faction.getDisplayName()));
-            } else {
-                Language.sendMessage(LangMessage.BANNED_PLAYER_COMMAND_ALREADY, player);
-            }
+            ban(player, banned);
         } else {
             CommandExecuteError(CommandExecuteError.NotEnoughArgs, player);
+        }
+    }
+
+    public static void ban(Player player, OfflinePlayer banned) {
+        Faction faction = FactionUtils.getFaction(player);
+        if (faction.isFrozen()) {
+            CommandExecuteError(CommandExecuteError.Frozen, player);
+            return;
+        }
+        if (!faction.getBannedPeople().contains(banned.getUniqueId())) {
+            faction.getBannedPeople().add(banned.getUniqueId());
+            Language.sendMessage(LangMessage.BANNED_PLAYER_COMMAND_SUCCESS, player,
+                    new Parseable("{banned}", banned.getName()));
+            faction.Leave(banned);
+
+            if (banned.isOnline()) {
+                Language.sendMessage(LangMessage.BANNED_PLAYER_COMMAND_LEAVE, banned.getPlayer(),
+                        new Parseable("{faction_displayName}", faction.getDisplayName()));
+            }
+        } else {
+            Language.sendMessage(LangMessage.BANNED_PLAYER_COMMAND_ALREADY, player);
         }
     }
 

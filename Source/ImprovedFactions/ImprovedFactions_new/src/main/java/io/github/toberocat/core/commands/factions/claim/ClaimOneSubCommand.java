@@ -15,7 +15,7 @@ import java.util.List;
 
 public class ClaimOneSubCommand extends SubCommand {
     public ClaimOneSubCommand() {
-        super("one", LangMessage.COMMAND_FACTION_CLAIM_DESCRIPTION, false);
+        super("one", "claim.one", LangMessage.COMMAND_FACTION_CLAIM_DESCRIPTION, false);
     }
 
     @Override
@@ -25,6 +25,10 @@ public class ClaimOneSubCommand extends SubCommand {
 
     @Override
     protected void CommandExecute(Player player, String[] args) {
+        claim(player);
+    }
+
+    public static void claim(Player player) {
         Faction faction = FactionUtility.getPlayerFaction(player);
 
         Result result = MainIF.getIF().getClaimManager().claimChunk(faction, player.getLocation().getChunk());
@@ -33,8 +37,6 @@ public class ClaimOneSubCommand extends SubCommand {
         else
             Language.sendMessage(LangMessage.COMMAND_FACTION_CLAIM_ONE_FAILED, player,
                     new Parseable("{error}", result.getPlayerMessage()));
-
-
     }
 
     @Override
