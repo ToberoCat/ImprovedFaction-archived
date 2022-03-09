@@ -79,5 +79,15 @@
   "info" : "other infos to know",
   "requiresVersion" : [ "BETAv5.0.1" ],
   "dependencies" : [ "Vault" ]
+}, {
+  "name" : "FactionChest",
+  "description" : "§fThis extension adds support for faction chests",
+  "download" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions/FactionChest.jar?raw=true",
+  "displayName" : "Faction global chest Extension",
+  "version" : "1.0",
+  "author" : "Tobero",
+  "info" : "other infos to know",
+  "requiresVersion" : [ "BETAv5.0.5" ],
+  "dependencies" : [ ]
 }]
 }
