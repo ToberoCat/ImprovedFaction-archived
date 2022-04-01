@@ -4,6 +4,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.toberocat.improvedfactions.bar.Bar;
+import io.github.toberocat.improvedfactions.bstat.Metrics;
 import io.github.toberocat.improvedfactions.commands.FDelCommand;
 import io.github.toberocat.improvedfactions.commands.FDelPCommand;
 import io.github.toberocat.improvedfactions.commands.FJoin;
@@ -36,7 +37,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.checkerframework.checker.units.qual.A;
 import org.xeustechnologies.jcl.JarClassLoader;
 import org.xeustechnologies.jcl.JclObjectFactory;
 
@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 public final class ImprovedFactionsMain extends JavaPlugin {
@@ -59,8 +60,6 @@ public final class ImprovedFactionsMain extends JavaPlugin {
     private static ImprovedFactionsMain INSTANCE;
 
     private PlayerMessages playerMessages;
-
-    private GuiListener guiListener;
 
     private SignMenuFactory signMenuFactory;
     private ProtocolManager protocolManager;
@@ -86,7 +85,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         File extensionFile = new File(getDataFolder().getPath() + "/Extensions");
         extensionFile.mkdir();
 
-        guiListener = new GuiListener();
+        GuiListener guiListener = new GuiListener();
 
         Rank.Init();
 
@@ -128,7 +127,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         getConfig().addDefault("general.messageType", "TITLE"); //TITLE, SUBTITLE, ACTIONBAR, ITEM
         getConfig().addDefault("general.wildnessText", "&2Wildness");
         getConfig().addDefault("general.safezoneText", "&bSafezone");
-        getConfig().addDefault("general.worlds", new String[] {
+        getConfig().addDefault("general.worlds", new String[]{
                 "world", "world_nether", "world_the_end"
         });
 
@@ -217,9 +216,9 @@ public final class ImprovedFactionsMain extends JavaPlugin {
                     JclObjectFactory factory = JclObjectFactory.getInstance();
                     jcl.add(jar.getPath());
                     //Extension extension = loader.LoadClass(jar, "extension.Main", Extension.class);
-                    Extension extension = (Extension) factory.create(jcl, "extension."+jar.getName().split("\\.")[0].toLowerCase()+".Main");
+                    Extension extension = (Extension) factory.create(jcl, "extension." + jar.getName().split("\\.")[0].toLowerCase() + ".Main");
                     if (!extension.preLoad(this)) {
-                        getServer().getConsoleSender().sendMessage("§7[Factions] §cExtension §6"+ extension.getRegistry().getName() +"§c disabled the loading. Remove it if this shouldn't happened");
+                        getServer().getConsoleSender().sendMessage("§7[Factions] §cExtension §6" + extension.getRegistry().getName() + "§c disabled the loading. Remove it if this shouldn't happened");
                         exit = true;
                         return;
                     }
@@ -270,7 +269,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         try {
             if (getConfig().getBoolean("general.updateChecker")) {
                 updateChecker = new UpdateChecker(VERSION, new URL("https://raw.githubusercontent.com/ToberoCat/ImprovedFaction/master/version.json"));
-                 if(!updateChecker.isNewestVersion()) {
+                if (!updateChecker.isNewestVersion()) {
                     getConsoleSender().sendMessage(Language.getPrefix() +
                             "§fA newer version of this plugin is available. Check it out: https://www.spigotmc.org/resources/improved-factions.95617/");
                 }
@@ -293,7 +292,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
             getServer().getConsoleSender().sendMessage("§7[Factions] §cDidn't find any extensions to be loaded");
         } else {
             getServer().getConsoleSender().sendMessage("§7[Factions] §aSuccessfully loaded " + loaded +
-                    (loaded==1?" extension" : " extensions"));
+                    (loaded == 1 ? " extension" : " extensions"));
         }
 
         File reports = new File(getDataFolder().getPath() + "/Data/reports.json");
@@ -334,8 +333,10 @@ public final class ImprovedFactionsMain extends JavaPlugin {
                     "§7[Factions] §6Warns couldn't get loaded. File is probably empty");
             WARNS = new Warn();
         }
-    }
 
+        Metrics metrics = new Metrics(this, 14810);
+        metrics.addCustomChart(new Metrics.SingleLineChart("players", () -> Bukkit.getOnlinePlayers().size()));
+    }
     @Override
     public void onDisable() {
         Faction.SaveFactions(this);

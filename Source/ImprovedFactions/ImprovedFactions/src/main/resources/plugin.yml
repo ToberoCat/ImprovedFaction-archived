@@ -13,12 +13,16 @@ commands:
     description: The faction command
     aliases:
       - faction
+    permission: faction.commands.f
   fdel:
     description: Delete a faction by registry from console
+    permission: faction.commands.fdel
   fdelP:
     description: Delete a faction by player from console
+    permission: faction.commands.fdelP
   fjoin:
     description: Force join a player
+    permission: faction.commands.fjoin
 
 permissions:
   faction.commands.ban:

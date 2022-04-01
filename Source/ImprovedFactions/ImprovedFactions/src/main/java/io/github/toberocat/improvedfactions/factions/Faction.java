@@ -5,6 +5,7 @@ import io.github.toberocat.improvedfactions.event.faction.FactionLeaveEvent;
 import io.github.toberocat.improvedfactions.factions.economy.Bank;
 import io.github.toberocat.improvedfactions.factions.power.PowerManager;
 import io.github.toberocat.improvedfactions.factions.relation.RelationManager;
+import io.github.toberocat.improvedfactions.ranks.AllyRank;
 import io.github.toberocat.improvedfactions.ranks.GuestRank;
 import io.github.toberocat.improvedfactions.ranks.OwnerRank;
 import io.github.toberocat.improvedfactions.utility.*;
@@ -120,11 +121,13 @@ public class Faction {
     public boolean hasPermission(Player player, String permission) {
         FactionMember member = getFactionMember(player);
         if (member == null) {
+            System.out.println("member isn't in faction");
             for (String ally : relationManager.getAllies()) {
                 Faction allied = FactionUtils.getFactionByRegistry(ally);
+                System.out.println(allied);
                 FactionMember[] players = Arrays.stream(allied.members).filter(x -> x.getUuid() == player.getUniqueId()).toArray(FactionMember[]::new);
                 if (players.length == 1) {
-                    member = players[0];
+                    member = new FactionMember(player.getUniqueId(), Rank.fromString(AllyRank.registry));
                     break;
                 }
             }

@@ -130,6 +130,9 @@ public class ChunkUtils {
             return;
         }
 
+        Faction cc = GetFactionClaimedChunk(chunk);
+        if (cc != null) cc.getPowerManager().unclaimChunk();
+
         container.set(FACTION_CLAIMED_KEY, PersistentDataType.STRING, faction.getRegistryName());
         AddChunk(chunk);
         Bukkit.getPluginManager().callEvent(new ChunkClaimEvent(chunk, faction));

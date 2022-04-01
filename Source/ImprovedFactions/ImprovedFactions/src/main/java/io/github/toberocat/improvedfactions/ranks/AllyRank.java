@@ -5,8 +5,9 @@ import io.github.toberocat.improvedfactions.utility.Utils;
 import org.bukkit.inventory.ItemStack;
 
 public class AllyRank extends Rank{
+    public static final String registry = "allyrank";
     public AllyRank() {
-        super("Ally rank", "allyrank", false);
+        super("Ally rank", registry, false);
     }
 
     @Override
