@@ -189,7 +189,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
             FactionExpansion.init();
             new FactionExpansion().register();
         } else {
-            getLogger().info("Found PlaceholderAPI");
+            getLogger().info("Couldn't find PlaceholderAPI");
         }
 
         Bukkit.getScheduler().runTaskLater(this, () -> {
@@ -198,7 +198,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
             getLogger().info("IF enabled correctly");
         }, 1);
 
-        //Load extentions
+        //Load extensions
         try {
             ExtensionListLoader.RegenerateExtensionList();
         } catch (IOException e) {
@@ -264,7 +264,6 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         //Others
         FactionSettings.Init();
         Faction.LoadFactions(this);
-
 
         try {
             if (getConfig().getBoolean("general.updateChecker")) {
@@ -390,7 +389,6 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         }
         return INSTANCE;
     }
-
 
     public static void AddPlayerData(Player player) {
         PersistentDataContainer container = player.getLocation().getChunk().getPersistentDataContainer();
