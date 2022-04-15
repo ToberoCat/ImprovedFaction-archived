@@ -11,10 +11,17 @@ public class EnumSetting extends Setting<Integer> {
 
     public String[] values;
 
-    public EnumSetting() {}
-    public <T extends SettingEnum> EnumSetting(T[] enumValues, ItemStack display) {
-        super(0, display);
+    public EnumSetting() {
+    }
+
+    public <T extends SettingEnum> EnumSetting(T[] enumValues, String settingName, ItemStack display) {
+        super(settingName, 0, display);
         this.values = Arrays.stream(enumValues).map(value -> format(value.getDisplay())).toArray(String[]::new);
+    }
+
+    public EnumSetting(String[] values, String settingName, ItemStack display) {
+        super(settingName, 0, display);
+        this.values = values;
     }
 
     public int rotateSelection() {

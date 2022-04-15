@@ -1,9 +1,12 @@
 package io.github.toberocat.core.utility.settings.type;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.github.toberocat.MainIF;
+import io.github.toberocat.core.debug.Debugger;
 import io.github.toberocat.core.utility.Utility;
 import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.callbacks.Callback;
+import io.github.toberocat.core.utility.config.DataManager;
 import io.github.toberocat.core.utility.gui.slot.Slot;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.HumanEntity;
@@ -12,18 +15,39 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Setting<T> {
+    protected static DataManager config = new DataManager(MainIF.getIF(), "settings.yml");
+
     protected T selected;
     protected ItemStack display;
+    protected boolean isLocked;
+    protected String settingName;
 
     public Setting() {
     }
 
-    public Setting(T t, ItemStack display) {
+    public Setting(String settingName, T t, ItemStack display) {
         this.selected = t;
         this.display = display;
+        this.settingName = settingName;
+
+        config.getConfig().addDefault("settings." + settingName + ".isLocked", false);
+        config.getConfig().options().copyDefaults(true);
+        config.saveConfig();
+
+        this.isLocked = config.getConfig().getBoolean("settings." + settingName + ".isLocked");
+    }
+    public Setting(String settingName, T t, boolean isLocked, ItemStack display) {
+        this.selected = t;
+        this.display = display;
+        this.settingName = settingName;
+
+        config.getConfig().addDefault("settings." + settingName + ".isLocked", isLocked);
+        config.getConfig().options().copyDefaults(true);
+        config.saveConfig();
+
+        this.isLocked = config.getConfig().getBoolean("settings." + settingName + ".isLocked");
     }
 
     public static Map<String, Setting> populateSettings(Map<String, Setting> defaulted, Map<String, Setting> current) {
@@ -33,7 +57,9 @@ public class Setting<T> {
             current.replace(key, defaultSettings);
             current.get(key).setSelected(selected);
 
+            current.get(key).setSettingName(defaultSettings.getSettingName());
             current.get(key).setDisplay(defaultSettings.getDisplay());
+            current.get(key).setLocked(defaultSettings.isLocked());
 
             if (defaultSettings instanceof EnumSetting enumDefaults) {
                 ((EnumSetting) current.get(key)).setValues(enumDefaults.getValues());
@@ -46,7 +72,7 @@ public class Setting<T> {
         return current;
     }
 
-    public static Slot getSlot(Setting setting, Callback render) {
+    public static Slot getSlot(Setting setting, Player player, Callback render) {
         if (setting instanceof HiddenSetting) return null;
 
         if (setting instanceof BoolSetting boolSetting) {
@@ -64,11 +90,20 @@ public class Setting<T> {
             }
             defaultLore.addAll(List.of(enabled + "enabled", disabled + "disabled"));
             defaultLore.add("");
-            defaultLore.add("§8Click to toggle selected");
+            if (!setting.isLocked) defaultLore.add("§8Click to toggle selected");
+            else defaultLore.add("§6Can't interact. Setting is locked");
+
+            if (setting.isLocked && Debugger.hasPermission(player, "factions.gui.unlock-settings")) {
+                defaultLore.add("");
+                defaultLore.add("&6You can interact with locked settings.");
+                defaultLore.add("&6That's true power");
+            }
 
             return new Slot(Utility.setLore(boolSetting.getDisplay(), defaultLore.toArray(String[]::new))) {
                 @Override
                 public void OnClick(HumanEntity entity) {
+                    if (setting.isLocked && !Debugger.hasPermission(player, "factions.gui.unlock-settings")) return;
+
                     setting.setSelected(!(Boolean) setting.getSelected());
                     render.callback();
                 }
@@ -88,11 +123,20 @@ public class Setting<T> {
                         "&7" + values[i]));
             }
             lore.add("");
-            lore.add("§8Click to switch selected");
+            if (!setting.isLocked) lore.add("§8Click to switch selected");
+            else lore.add("§6Can't interact. Setting is locked");
+
+            if (setting.isLocked && Debugger.hasPermission(player, "factions.gui.unlock-settings")) {
+                lore.add("");
+                lore.add("&6You can interact with locked settings.");
+                lore.add("&6That's true power");
+            }
 
             return new Slot(Utility.setLore(enumSetting.getDisplay(), lore.toArray(String[]::new))) {
                 @Override
                 public void OnClick(HumanEntity entity) {
+                    if (setting.isLocked && !Debugger.hasPermission(player, "factions.gui.unlock-settings")) return;
+
                     enumSetting.rotateSelection();
                     render.callback();
                 }
@@ -106,9 +150,20 @@ public class Setting<T> {
                 lore.add("");
             }
 
+            if (!setting.isLocked) lore.add("§8Click to execute");
+            else lore.add("§6Can't interact. Setting is locked");
+
+            if (setting.isLocked && Debugger.hasPermission(player, "factions.gui.unlock-settings")) {
+                lore.add("");
+                lore.add("&6You can interact with locked settings.");
+                lore.add("&6That's true power");
+            }
+
             return new Slot(Utility.setLore(callbackSettings.getDisplay(), lore.toArray(String[]::new))) {
                 @Override
                 public void OnClick(HumanEntity clicker) {
+                    if (setting.isLocked && !Debugger.hasPermission(player, "factions.gui.unlock-settings")) return;
+
                     AsyncCore.runLaterSync(0, () -> callbackSettings.execute((Player) clicker));
                 }
             };
@@ -117,6 +172,8 @@ public class Setting<T> {
         return new Slot(setting.getDisplay()) {
             @Override
             public void OnClick(HumanEntity entity) {
+                if (setting.isLocked && !Debugger.hasPermission(player, "factions.gui.unlock-settings")) return;
+
                 render.callback();
             }
         };
@@ -140,14 +197,23 @@ public class Setting<T> {
         this.display = display;
     }
 
-    /*    @JsonIgnore
-    public String[] getEnumValues() {
-        return enumValues;
+    @JsonIgnore
+    public boolean isLocked() {
+        return isLocked;
     }
 
     @JsonIgnore
-    public Setting<T> setEnumValues(String[] enumValues) {
-        this.enumValues = enumValues;
-        return this;
-    }*/
+    public void setLocked(boolean locked) {
+        isLocked = locked;
+    }
+
+    @JsonIgnore
+    public String getSettingName() {
+        return settingName;
+    }
+
+    @JsonIgnore
+    public void setSettingName(String settingName) {
+        this.settingName = settingName;
+    }
 }

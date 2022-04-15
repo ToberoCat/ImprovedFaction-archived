@@ -121,11 +121,9 @@ public class Faction {
     public boolean hasPermission(Player player, String permission) {
         FactionMember member = getFactionMember(player);
         if (member == null) {
-            System.out.println("member isn't in faction");
             for (String ally : relationManager.getAllies()) {
                 Faction allied = FactionUtils.getFactionByRegistry(ally);
-                System.out.println(allied);
-                FactionMember[] players = Arrays.stream(allied.members).filter(x -> x.getUuid() == player.getUniqueId()).toArray(FactionMember[]::new);
+                FactionMember[] players = FactionUtils.getAllFactionMembers(allied).stream().filter(x -> x.getUuid() == player.getUniqueId()).toArray(FactionMember[]::new);
                 if (players.length == 1) {
                     member = new FactionMember(player.getUniqueId(), Rank.fromString(AllyRank.registry));
                     break;

@@ -6,19 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 public class LangMessage {
-    public static List<LangDefaultDataAddon> langDefaultDataAddons = new ArrayList<>();
-
     public static final String PLUGIN_STANDBY_MESSAGE = "message.plugin-standby";
-
     public static final String GUI_BACKUP_CONFIG_TITLE = "gui.config.backup.title";
-
     public static final String ERROR_GENERAL = "error.general";
-
     public static final String COMMAND_HELP_DESCRIPTION = "command.help.description";
     public static final String THIS_COMMAND_DOES_NOT_EXIST = "command.not-exist";
-
     public static final String GUI_EXTENSION_DOWNLOAD_TITLE = "gui.extension.download.title";
-
     //<editor-fold desc="Command Config">
     public static final String COMMAND_CONFIG_DESCRIPTION = "command.config.description";
     public static final String COMMAND_CONFIG_BACKUP_DESCRIPTION = "command.config.backup.description";
@@ -30,62 +23,52 @@ public class LangMessage {
     public static final String COMMAND_CONFIG_BACKUP_REMOVE_DESCRIPTION = "command.config.backup.remove.description";
     public static final String COMMAND_CONFIG_BACKUP_REMOVE_SUCCESS = "command.config.backup.remove.success";
     public static final String COMMAND_CONFIG_CONFIGURE_DESCRIPTION = "command.config.configure.description";
-    //</editor-fold>
-
     //<editor-fold desc="Command Relation">
     public static final String COMMAND_RELATION_DESCRIPTION = "command.relation.description";
+    //</editor-fold>
     public static final String COMMAND_RELATION_ALLY_INVITATION = "command.relation.ally.invitation";
     public static final String COMMAND_RELATION_STATUS_CHANGE = "command.relation.status.changed";
-
     public static final String COMMAND_RELATION_ACCEPT_DESCRIPTION = "command.relation.accept.description";
     public static final String COMMAND_RELATION_ACCEPT_SUCCESS = "command.relation.accept.success";
     public static final String COMMAND_RELATION_REJECT_DESCRIPTION = "command.relation.reject.description";
     public static final String COMMAND_RELATION_REJECT_SUCCESS = "command.relation.reject.success";
-
     public static final String COMMAND_RELATION_ALLY_DESCRIPTION = "command.relation.ally.description";
     public static final String COMMAND_RELATION_ENEMY_DESCRIPTION = "command.relation.enemy.description";
     public static final String COMMAND_RELATION_REMOVE_DESCRIPTION = "command.relation.remove.description";
-
     public static final String COMMAND_RELATION_ALLY_SUCCESS = "command.relation.ally.success";
     public static final String COMMAND_RELATION_ALLY_FAIL = "command.relation.ally.fail";
     public static final String COMMAND_RELATION_ENEMY_SUCCESS = "command.relation.enemy.success";
     public static final String COMMAND_RELATION_ENEMY_FAIL = "command.relation.enemy.fail";
     public static final String COMMAND_RELATION_REMOVE_SUCCESS = "command.relation.remove.success";
     public static final String COMMAND_RELATION_REMOVE_FAIL = "command.relation.remove.fail";
-    //</editor-fold>
-
     //<editor-fold desc="Command Faction">
     public static final String COMMAND_FACTION_CREATE_DESCRIPTION = "command.faction.create.description";
+    //</editor-fold>
     public static final String COMMAND_FACTION_CREATE_SUCCESS = "command.faction.create.success";
     public static final String COMMAND_FACTION_CREATE_FAILED = "command.faction.create.failed";
     public static final String COMMAND_FACTION_DELETE_DESCRIPTION = "command.faction.delete.description";
     public static final String COMMAND_FACTION_DELETE_SUCCESS = "command.faction.delete.success";
     public static final String COMMAND_FACTION_DELETE_FAILED = "command.faction.delete.failed";
     public static final String COMMAND_FACTION_CLAIM_ONE_SUCCESS = "command.faction.claim.one.success";
-
     public static final String COMMAND_FACTION_CLAIM_DESCRIPTION = "command.faction.claim.description";
     public static final String COMMAND_FACTION_CLAIM_ONE_DESCRIPTION = "command.faction.claim.one.description";
     public static final String COMMAND_FACTION_CLAIM_ONE_FAILED = "command.faction.claim.one.failed";
-
     public static final String COMMAND_FACTION_LEAVE_SUCCESS = "command.faction.leave.success";
     public static final String COMMAND_FACTION_JOIN_SUCCESS = "command.faction.join.success";
-    //</editor-fold>
-
     //<editor-fold desc="General Faction">
     public static final String FACTION_LEAVE_DELETED = "faction.leave.forced";
-    public static final String FACTION_KICKED = "faction.kick.success";
     //</editor-fold>
-
+    public static final String FACTION_KICKED = "faction.kick.success";
     //<editor-fold desc="Command Plugin">
     public static final String COMMAND_PLUGIN_DESCRIPTION = "command.plugin.description";
+    //</editor-fold>
     public static final String COMMAND_PLUGIN_DISABLE_DESCRIPTION = "command.plugin.disable.description";
     public static final String COMMAND_PLUGIN_DISABLE_SUCCESS = "command.plugin.disable.success";
     public static final String COMMAND_PLUGIN_STANDBY_DESCRIPTION = "command.plugin.standby.description";
     public static final String COMMAND_PLUGIN_STANDBY_SUCCESS = "command.plugin.standby.success";
-    //</editor-fold>
-
     //<editor-fold desc="Command Zones">
     public static final String COMMAND_ZONES_DESCRIPTION = "command.zones.description";
+    //</editor-fold>
     public static final String COMMAND_ZONES_UNCLAIM = "command.zones.unclaim";
     public static final String COMMAND_ZONES_UNCLAIM_DESCRIPTION = "command.zones.unclaim.description";
     public static final String COMMAND_ZONES_SAFEZONE_DESCRIPTION = "command.zones.safezone.description";
@@ -94,41 +77,34 @@ public class LangMessage {
     public static final String COMMAND_ZONES_WARZONE_CLAIM = "command.zones.warzone.claim";
     public static final String COMMAND_ZONES_UNCLAIMABLE_DESCRIPTION = "command.zones.unclaimable.description";
     public static final String COMMAND_ZONES_UNCLAIMABLE_CLAIM = "command.zones.unclaimable.claim";
-    //</editor-fold>
-
     //<editor-fold desc="Command Admin">
     public static final String COMMAND_ADMIN_DESCRIPTION = "command.admin.description";
+    //</editor-fold>
     public static final String COMMAND_ADMIN_HARD_RESET_DESCRIPTION = "command.admin.hardreset.description";
     public static final String COMMAND_ADMIN_HARD_RESET_CONFIRM_PLAYER = "command.admin.hardreset.confirm_player";
     public static final String COMMAND_ADMIN_HARD_RESET_SUCCESS = "command.admin.hardreset.success";
     public static final String COMMAND_ADMIN_DISBAND_DESCRIPTION = "command.admin.disband.description";
     public static final String COMMAND_ADMIN_DISBAND_SUCCESS = "command.admin.disband.success";
-    //</editor-fold>
-
     //<editor-fold desc="Rank">
     public static final String RANK_OWNER_DESCRIPTION = "rank.owner.description";
+    //</editor-fold>
     public static final String RANK_ADMIN_DESCRIPTION = "rank.admin.description";
     public static final String RANK_MEMBER_DESCRIPTION = "rank.member.description";
     public static final String RANK_NEWMEMBER_DESCRIPTION = "rank.newmember.description";
     public static final String RANK_GUEST_DESCRIPTION = "rank.guest.description";
-    //</editor-fold>
-
     public static final String TERRITORY_ENTERED_CHAT = "territory.entered.chat";
+    //</editor-fold>
     public static final String TERRITORY_ENTERED_ACTIONBAR = "territory.entered.actionbar";
     public static final String TERRITORY_ENTERED_TITLE = "territory.entered.title";
     public static final String TERRITORY_ENTERED_SUBTITLE = "territory.entered.subtitle";
     public static final String TERRITORY_WILDERNESS = "territory.wilderness";
     public static final String TERRITORY_SAFEZONE = "territory.safezone";
-    public static final String TERRITORY_WARZONE= "territory.warzone";
-
-
-
+    public static final String TERRITORY_WARZONE = "territory.warzone";
     //<editor-fold desc="Command Settings">
     public static final String COMMAND_SETTINGS_DESCRIPTION = "command.settings.description";
     public static final String COMMAND_SETTINGS_PLAYER_DESCRIPTION = "command.settings.player.description";
+    public static List<LangDefaultDataAddon> langDefaultDataAddons = new ArrayList<>();
     //</editor-fold>
-
-
     private Map<String, String> messages;
     private String author;
     private String credits;

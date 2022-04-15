@@ -1,11 +1,11 @@
 package io.github.toberocat.core.commands.factions;
 
 import io.github.toberocat.MainIF;
+import io.github.toberocat.core.factions.Faction;
+import io.github.toberocat.core.factions.FactionUtility;
 import io.github.toberocat.core.utility.Result;
 import io.github.toberocat.core.utility.command.SubCommand;
 import io.github.toberocat.core.utility.command.SubCommandSettings;
-import io.github.toberocat.core.utility.factions.Faction;
-import io.github.toberocat.core.utility.factions.FactionUtility;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
 import io.github.toberocat.core.utility.language.Parseable;
@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public class CreateFactionSubCommand extends SubCommand {
 
-    private ArrayList<UUID> PLAYER_WARNINGS;
+    private final ArrayList<UUID> PLAYER_WARNINGS;
 
     public CreateFactionSubCommand() {
         super("create", LangMessage.COMMAND_FACTION_CREATE_DESCRIPTION, false);
@@ -32,7 +32,7 @@ public class CreateFactionSubCommand extends SubCommand {
     @Override
     protected void CommandExecute(Player player, String[] args) {
 
-        if(!FactionUtility.doesFactionExist(FactionUtility.factionDisplayToRegistry(args[0]))) {
+        if (!FactionUtility.doesFactionExist(FactionUtility.factionDisplayToRegistry(args[0]))) {
             CreateFaction(player, args[0]);
         } else {
             Language.sendMessage(LangMessage.COMMAND_FACTION_CREATE_FAILED, player,

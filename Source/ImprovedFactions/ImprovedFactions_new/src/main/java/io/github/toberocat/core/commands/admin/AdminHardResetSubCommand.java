@@ -1,8 +1,6 @@
 package io.github.toberocat.core.commands.admin;
 
 import io.github.toberocat.MainIF;
-import io.github.toberocat.core.utility.Utility;
-import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.command.SubCommand;
 import io.github.toberocat.core.utility.command.SubCommandSettings;
 import io.github.toberocat.core.utility.data.DataAccess;
@@ -11,9 +9,7 @@ import io.github.toberocat.core.utility.language.Language;
 import io.github.toberocat.core.utility.settings.PlayerSettings;
 import org.bukkit.entity.Player;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.logging.Level;
 

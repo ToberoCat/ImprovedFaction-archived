@@ -1,11 +1,11 @@
 package io.github.toberocat.core.commands.factions.claim;
 
 import io.github.toberocat.MainIF;
-import io.github.toberocat.core.utility.factions.FactionUtility;
+import io.github.toberocat.core.factions.Faction;
+import io.github.toberocat.core.factions.FactionUtility;
 import io.github.toberocat.core.utility.Result;
 import io.github.toberocat.core.utility.command.SubCommand;
 import io.github.toberocat.core.utility.command.SubCommandSettings;
-import io.github.toberocat.core.utility.factions.Faction;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
 import io.github.toberocat.core.utility.language.Parseable;
@@ -18,16 +18,6 @@ public class ClaimOneSubCommand extends SubCommand {
         super("one", "claim.one", LangMessage.COMMAND_FACTION_CLAIM_DESCRIPTION, false);
     }
 
-    @Override
-    public SubCommandSettings getSettings() {
-        return super.getSettings().setNeedsFaction(SubCommandSettings.NYI.Yes);
-    }
-
-    @Override
-    protected void CommandExecute(Player player, String[] args) {
-        claim(player);
-    }
-
     public static void claim(Player player) {
         Faction faction = FactionUtility.getPlayerFaction(player);
 
@@ -37,6 +27,16 @@ public class ClaimOneSubCommand extends SubCommand {
         else
             Language.sendMessage(LangMessage.COMMAND_FACTION_CLAIM_ONE_FAILED, player,
                     new Parseable("{error}", result.getPlayerMessage()));
+    }
+
+    @Override
+    public SubCommandSettings getSettings() {
+        return super.getSettings().setNeedsFaction(SubCommandSettings.NYI.Yes);
+    }
+
+    @Override
+    protected void CommandExecute(Player player, String[] args) {
+        claim(player);
     }
 
     @Override

@@ -1,8 +1,8 @@
 package io.github.toberocat.core.commands.admin;
 
+import io.github.toberocat.core.factions.FactionUtility;
 import io.github.toberocat.core.utility.command.SubCommand;
 import io.github.toberocat.core.utility.command.SubCommandSettings;
-import io.github.toberocat.core.utility.factions.FactionUtility;
 import io.github.toberocat.core.utility.language.Language;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -15,7 +15,6 @@ public class AdminIsPlayerInFactionSubCommand extends SubCommand {
     public AdminIsPlayerInFactionSubCommand() {
         super("isinfaction", "admin.isinfaction", "", false);
     }
-
 
 
     @Override

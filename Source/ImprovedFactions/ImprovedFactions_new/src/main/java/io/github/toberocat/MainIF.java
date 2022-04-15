@@ -1,28 +1,26 @@
 package io.github.toberocat;
 
+import io.github.toberocat.core.bstat.Bstat;
 import io.github.toberocat.core.commands.FactionCommand;
-import io.github.toberocat.core.listeners.GuiListener;
-import io.github.toberocat.core.listeners.PlayerJoinListener;
-import io.github.toberocat.core.listeners.PlayerLeaveListener;
-import io.github.toberocat.core.listeners.PlayerMoveListener;
-import io.github.toberocat.core.utility.dynamic.loaders.DynamicLoader;
-import io.github.toberocat.core.utility.events.bukkit.PlayerJoinOnReloadEvent;
-import io.github.toberocat.core.utility.factions.FactionUtility;
-import io.github.toberocat.core.utility.Utility;
+import io.github.toberocat.core.factions.FactionUtility;
+import io.github.toberocat.core.factions.permission.FactionPerm;
+import io.github.toberocat.core.factions.rank.Rank;
+import io.github.toberocat.core.listeners.*;
 import io.github.toberocat.core.utility.Result;
+import io.github.toberocat.core.utility.Utility;
+import io.github.toberocat.core.utility.calender.TimeCore;
 import io.github.toberocat.core.utility.claim.ClaimManager;
+import io.github.toberocat.core.utility.config.Config;
 import io.github.toberocat.core.utility.config.ConfigManager;
+import io.github.toberocat.core.utility.config.DataManager;
 import io.github.toberocat.core.utility.data.DataAccess;
-import io.github.toberocat.core.utility.factions.permission.FactionPerm;
-import io.github.toberocat.core.utility.factions.rank.Rank;
+import io.github.toberocat.core.utility.dynamic.loaders.DynamicLoader;
+import io.github.toberocat.core.utility.events.ConfigSaveEvent;
+import io.github.toberocat.core.utility.events.bukkit.PlayerJoinOnReloadEvent;
 import io.github.toberocat.core.utility.items.ItemCore;
 import io.github.toberocat.core.utility.json.JsonUtility;
 import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
-import io.github.toberocat.core.utility.calender.TimeCore;
-import io.github.toberocat.core.utility.config.Config;
-import io.github.toberocat.core.utility.config.DataManager;
-import io.github.toberocat.core.utility.events.ConfigSaveEvent;
 import io.github.toberocat.core.utility.map.MapHandler;
 import io.github.toberocat.core.utility.messages.MessageSystem;
 import io.github.toberocat.core.utility.settings.FactionSettings;
@@ -53,26 +51,87 @@ import static org.bukkit.Bukkit.getPluginManager;
  */
 public final class MainIF extends JavaPlugin {
 
+    private static final Version VERSION = Version.from("1.0");
     //<editor-fold desc="Variables">
     private static MainIF INSTANCE;
-
-    private static final Version VERSION = Version.from("1.0");
-
-    private NMSInterface nms;
-
-    private boolean standby = false;
-
     private static Economy economy;
     private static ConfigManager configManager;
-
-    private ClaimManager claimManager;
     private final List<ConfigSaveEvent> saveEvents = new ArrayList<>();
     private final Map<String, Config> configMap = new HashMap<>();
     private final Map<String, ArrayList<String>> backupFile = new HashMap<>(); // Delete the backup map after backup got restored
     private final Map<String, DataManager> dataManagers = new HashMap<>();
+    private NMSInterface nms;
+    private boolean standby = false;
+    private ClaimManager claimManager;
     //</editor-fold>
 
     //<editor-fold desc="Overrides">
+
+    /**
+     * Send a message to the server.
+     * This won't send a message, if the level isn't represented in debug.logLevel (config.yml)
+     *
+     * @param level   That's the level you want to log
+     * @param message The message you want to get logged
+     */
+    public static void LogMessage(Level level, String message) {
+        Utility.run(() -> {
+            List<String> values;
+            if (!INSTANCE.isEnabled()) {
+                values = Arrays.asList("INFO", "WARNING", "SEVERE");
+            } else {
+                values = configManager.getValue("debug.logLevel");
+            }
+
+            if (!values.contains(level.toString())) return;
+
+            if (configManager.getValue("general.colorConsole")) {
+                //Bukkit.getLogger().log(level, );
+                Bukkit.getLogger().log(level, Language.format("&7[&e&lImprovedFactions&7] " + message));
+            } else {
+                Bukkit.getLogger().log(level,
+                        ChatColor.stripColor(Language.format("&7[&e&lImprovedFactions&7] " + message)));
+            }
+        });
+    }
+
+    /**
+     * Get the instance of this plugin
+     *
+     * @return The instance of this plugin
+     */
+    public static MainIF getIF() {
+        return INSTANCE;
+    }
+    //</editor-fold>
+
+    //<editor-fold desc="Public functions">
+
+    /**
+     * Get the economy for this plugin
+     * The economy can be null, if Vault + A economy supoorting pluign (e.g.: Essentails) is not found
+     */
+    public static Economy getEconomy() {
+        return economy;
+    }
+
+    /**
+     * Get the current plugin version
+     *
+     * @return The version
+     */
+    public static Version getVersion() {
+        return VERSION;
+    }
+
+    /**
+     * Get the manager to add, load and reload config data
+     *
+     * @return The configManager instance
+     */
+    public static ConfigManager getConfigManager() {
+        return configManager;
+    }
 
     /**
      * Don't call this manually.
@@ -80,27 +139,29 @@ public final class MainIF extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-        INSTANCE = this;
+        Utility.run(() -> {
+            INSTANCE = this;
 
-        GenerateConfigs();
+            GenerateConfigs();
 
-        LoadListeners();
+            LoadListeners();
 
-        if (!InitializeCores()) return;
-        if (!LoadPluginVersion()) return;
+            if (!InitializeCores()) return;
+            if (!LoadPluginVersion()) return;
 
-        LoadPluginDependencies();
+            LoadPluginDependencies();
 
-        FactionCommand command = new FactionCommand();
-        getServer().getPluginCommand("faction").setExecutor(command);
-        getServer().getPluginCommand("faction").setTabCompleter(command);
+            FactionCommand command = new FactionCommand();
+            getServer().getPluginCommand("faction").setExecutor(command);
+            getServer().getPluginCommand("faction").setTabCompleter(command);
 
-        for (Player player : getServer().getOnlinePlayers()) {
-            Bukkit.getPluginManager().callEvent(new PlayerJoinOnReloadEvent(player));
-            PlayerJoinListener.PLAYER_JOINS.put(player.getUniqueId(), System.currentTimeMillis());
-        }
+            for (Player player : getServer().getOnlinePlayers()) {
+                Bukkit.getPluginManager().callEvent(new PlayerJoinOnReloadEvent(player));
+                PlayerJoinListener.PLAYER_JOINS.put(player.getUniqueId(), System.currentTimeMillis());
+            }
 
-        DynamicLoader.enable();
+            DynamicLoader.enable();
+        });
     }
 
     /**
@@ -109,81 +170,64 @@ public final class MainIF extends JavaPlugin {
      */
     @Override
     public void onDisable() {
-        SaveConfigs();
-        DataAccess.disable();
-        DynamicLoader.disable();
+        Utility.run(() -> {
+            SaveConfigs();
+            DataAccess.disable();
+            DynamicLoader.disable();
 
-        saveEvents.clear();
-        backupFile.clear();
-        dataManagers.clear();
-        configMap.clear();
-        PlayerJoinListener.PLAYER_JOINS.clear();
+            saveEvents.clear();
+            backupFile.clear();
+            dataManagers.clear();
+            configMap.clear();
+            PlayerJoinListener.PLAYER_JOINS.clear();
 
-        INSTANCE = null;
+            INSTANCE = null;
+        });
     }
+
     //</editor-fold>
 
-    //<editor-fold desc="Public functions">
+    //<editor-fold desc="Loading functions">
+
     /**
-     *  This saves everything that can be saved to prevent data loss when an error happens.
-     *  In a normal case, it will only put the plugin in standby, to enable simple land protection
-     *  This formats the error message
-     * @see Language#format(String)
+     * This saves everything that can be saved to prevent data loss when an error happens.
+     * In a normal case, it will only put the plugin in standby, to enable simple land protection
+     * This formats the error message
+     *
      * @param shutdownMessage This message will be printed to console before disabling the plugin
+     * @see Language#format(String)
      */
     public void SaveShutdown(String shutdownMessage) {
-        if (standby) {
-            LogMessage(Level.SEVERE, "&c"+shutdownMessage);
-            return;
-        }
-        standby = true;
-
-        LogMessage(Level.SEVERE, "&c"+shutdownMessage);
-        LogMessage(Level.WARNING, "ImprovedFactions put it self in standby. All commands will be disabled. Only simple claim protection is working");
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (standby && player.hasPermission("factions.messages.standby")) {
-                Language.sendMessage(LangMessage.PLUGIN_STANDBY_MESSAGE, player);
+        Utility.run(() -> {
+            if (standby) {
+                LogMessage(Level.SEVERE, "&c" + shutdownMessage);
+                return;
             }
-        }
+            standby = true;
 
-        ArrayList<String> standbyCommands = configManager.getValue("commands.standby");
+            LogMessage(Level.SEVERE, "&c" + shutdownMessage);
+            LogMessage(Level.WARNING, "ImprovedFactions put it self in standby. All commands will be disabled. Only simple claim protection is working");
 
-        getServer().getScheduler().runTaskLater(this, () -> {
-            for (String command : standbyCommands) {
-                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (standby && player.hasPermission("factions.messages.standby")) {
+                    Language.sendMessage(LangMessage.PLUGIN_STANDBY_MESSAGE, player);
+                }
             }
-        }, 0);
-    }
 
-    /**
-     * Send a message to the server.
-     * This won't send a message, if the level isn't represented in debug.logLevel (config.yml)
-     * @param level That's the level you want to log
-     * @param message The message you want to get logged
-     */
-    public static void LogMessage(Level level, String message) {
-        List<String> values = null;
-        if (!INSTANCE.isEnabled()) {
-            values = Arrays.asList("INFO", "WARNING", "SEVERE");
-        } else {
-            values = configManager.getValue("debug.logLevel");
-        }
+            ArrayList<String> standbyCommands = configManager.getValue("commands.standby");
 
-        if (!values.contains(level.toString())) return;
-
-        if (configManager.getValue("general.colorConsole")) {
-            //Bukkit.getLogger().log(level, );
-            Bukkit.getLogger().log(level, Language.format("&7[&e&lImprovedFactions&7] " + message));
-        } else {
-            Bukkit.getLogger().log(level,
-                    ChatColor.stripColor(Language.format("&7[&e&lImprovedFactions&7] " + message)));
-        }
+            getServer().getScheduler().runTaskLater(this, () -> {
+                for (String command : standbyCommands) {
+                    Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                }
+            }, 0);
+        });
     }
 
     /**
      * Save all configs and extra data. If something happens while saving, it will save a backup.
      * That can seen when using /f config backup ingame
+     *
      * @return Returns a list of all successfully saved configs
      */
     public List<String> SaveConfigs() {
@@ -263,13 +307,10 @@ public final class MainIF extends JavaPlugin {
         });
     }
 
-    //</editor-fold>
-
-    //<editor-fold desc="Loading functions">
-
     private boolean CallSaveEvents(Config config) {
         for (ConfigSaveEvent event : saveEvents) {
-            if (event.isSingleCall() == ConfigSaveEvent.SaveType.Config && !event.Save(config).isSuccess()) return false;
+            if (event.isSingleCall() == ConfigSaveEvent.SaveType.Config && !event.Save(config).isSuccess())
+                return false;
         }
         return true;
     }
@@ -280,7 +321,7 @@ public final class MainIF extends JavaPlugin {
             configManager.register();
 
             //<editor-fold desc="Loading backups">
-            File backupFolder = new File (getDataFolder().getPath() + "/.temp/backups");
+            File backupFolder = new File(getDataFolder().getPath() + "/.temp/backups");
 
             if (!backupFolder.exists()) backupFolder.mkdirs();
 
@@ -301,6 +342,8 @@ public final class MainIF extends JavaPlugin {
         getPluginManager().registerEvents(new PlayerLeaveListener(), this);
         getPluginManager().registerEvents(new GuiListener(), this);
         getPluginManager().registerEvents(new PlayerMoveListener(), this);
+        getPluginManager().registerEvents(new BlockBreakListener(), this);
+        getPluginManager().registerEvents(new BlockPlaceListener(), this);
     }
 
     private boolean LoadPluginVersion() {
@@ -324,6 +367,10 @@ public final class MainIF extends JavaPlugin {
         nms.EnableInterface();
         return true;
     }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Getters and Setters">
 
     private void LoadPluginDependencies() {
         new BukkitRunnable() {
@@ -360,6 +407,7 @@ public final class MainIF extends JavaPlugin {
         FactionPerm.register();
         ItemCore.register();
         MapHandler.register();
+        Bstat.register(this);
 
         claimManager = new ClaimManager();
         new FactionUtility();
@@ -373,18 +421,16 @@ public final class MainIF extends JavaPlugin {
     /**
      * Add a listener for events while the plugin is running
      * NOTE: This could cause some troubles if the event is getting called while adding
+     *
      * @param listener The listener that should be added
      */
     public void RegisterListener(Listener listener) {
         getPluginManager().registerEvents(listener, this);
     }
 
-    //</editor-fold>
-
-    //<editor-fold desc="Getters and Setters">
-
     /**
      * Get the data managers. These are needed to load config settings
+     *
      * @return A map of String:Datamanager pairs. The string is the datamanager file name
      */
     public Map<String, DataManager> getDataManagers() {
@@ -392,23 +438,8 @@ public final class MainIF extends JavaPlugin {
     }
 
     /**
-     * Get the instance of this plugin
-     * @return The instance of this plugin
-     */
-    public static MainIF getIF() {
-        return INSTANCE;
-    }
-
-    /**
-     * Get the economy for this plugin
-     * The economy can be null, if Vault + A economy supoorting pluign (e.g.: Essentails) is not found
-     */
-    public static Economy getEconomy() {
-        return economy;
-    }
-
-    /**
      * Get if the plugin is in standby. If it is, disable everything that could load data, access factions and manage settings
+     *
      * @return A value that tells if the plugin ha put itself into standby
      */
     public boolean isStandby() {
@@ -417,6 +448,7 @@ public final class MainIF extends JavaPlugin {
 
     /**
      * Get the list of backups read while enabling / reloading the plugin
+     *
      * @return This will be empty if no .backup will be found
      */
     public Map<String, ArrayList<String>> getBackupFile() {
@@ -425,6 +457,7 @@ public final class MainIF extends JavaPlugin {
 
     /**
      * Get all loaded config settings
+     *
      * @return config map. String is for path. E.g: general.prefix
      */
     public Map<String, Config> getConfigMap() {
@@ -432,24 +465,9 @@ public final class MainIF extends JavaPlugin {
     }
 
     /**
-     * Get the current plugin version
-     * @return The version
-     */
-    public static Version getVersion() {
-        return VERSION;
-    }
-
-    /**
-     * Get the manager to add, load and reload config data
-     * @return The configManager instance
-     */
-    public static ConfigManager getConfigManager() {
-        return configManager;
-    }
-
-    /**
      * Get the save events that will be called when something gets saved.
      * You can tell if the file should be saved as backup, or add your own backup system
+     *
      * @return a list of conifg save events
      */
     public List<ConfigSaveEvent> getSaveEvents() {

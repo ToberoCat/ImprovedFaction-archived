@@ -1,9 +1,9 @@
 package io.github.toberocat.core.utility.gui;
 
 import io.github.toberocat.core.listeners.GuiListener;
+import io.github.toberocat.core.utility.callbacks.Callback;
 import io.github.toberocat.core.utility.gui.page.Page;
 import io.github.toberocat.core.utility.gui.slot.Slot;
-import io.github.toberocat.core.utility.callbacks.Callback;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -29,7 +29,7 @@ public class Gui {
     public Gui(Player player, Inventory inventory, GUISettings settings) {
         assert player != null && inventory != null && settings != null;
 
-        GuiListener.guis.add(this);
+        GuiListener.GUIS.add(this);
 
         this.inventory = inventory;
         this.settings = settings;
@@ -61,22 +61,34 @@ public class Gui {
         }
     }
 
-    protected void close() {}
+    protected void close() {
+    }
 
     public void onInventoryDrag(InventoryDragEvent event, Iterator<Gui> iterator) {
         event.setCancelled(!settings.isDragable());
     }
-    public  void onInventoryClose(InventoryCloseEvent event, Iterator<Gui> iterator) {
+
+    public void onInventoryClose(InventoryCloseEvent event, Iterator<Gui> iterator) {
         if (event.getInventory().equals(inventory)) {
             close();
             iterator.remove();
         }
     }
 
+    public void clear() {
+        slots.remove(currentPage);
+        slots.add(currentPage, new Page());
+    }
+
     public void addSlot(Slot slot) {
         if (slot == null) return;
         if (slots.get(slots.size() - 1).addSlot(slot)) slots.add(new Page());
 
+        slots.get(currentPage).render(currentPage, slots.size(), inventory, settings);
+    }
+
+    public void addSlot(Slot slot, int page, int invSlot) {
+        slots.get(page).addSlot(slot, invSlot);
         slots.get(currentPage).render(currentPage, slots.size(), inventory, settings);
     }
 
@@ -87,7 +99,7 @@ public class Gui {
                 callback.callback();
             }
         })) {
-           slots.add(new Page());
+            slots.add(new Page());
         }
         slots.get(currentPage).render(currentPage, slots.size(), inventory, settings);
     }

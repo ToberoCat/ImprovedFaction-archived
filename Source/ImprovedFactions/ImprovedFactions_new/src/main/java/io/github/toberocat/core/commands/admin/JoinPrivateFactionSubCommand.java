@@ -1,12 +1,11 @@
 package io.github.toberocat.core.commands.admin;
 
+import io.github.toberocat.core.factions.Faction;
+import io.github.toberocat.core.factions.FactionUtility;
+import io.github.toberocat.core.factions.rank.Rank;
+import io.github.toberocat.core.factions.rank.members.AdminRank;
 import io.github.toberocat.core.utility.command.SubCommand;
 import io.github.toberocat.core.utility.command.SubCommandSettings;
-import io.github.toberocat.core.utility.factions.Faction;
-import io.github.toberocat.core.utility.factions.FactionUtility;
-import io.github.toberocat.core.utility.factions.rank.Rank;
-import io.github.toberocat.core.utility.factions.rank.members.AdminRank;
-import io.github.toberocat.core.utility.factions.rank.members.MemberRank;
 import io.github.toberocat.core.utility.language.Language;
 import org.bukkit.entity.Player;
 

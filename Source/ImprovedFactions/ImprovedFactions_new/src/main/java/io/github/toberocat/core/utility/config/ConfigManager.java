@@ -18,6 +18,7 @@ public record ConfigManager(MainIF plugin) {
                 Level.INFO.toString(), Level.WARNING.toString(), Level.SEVERE.toString()
         });
 
+        addToDefaultConfig("general.sendCrashesToGithub", true);
         addToDefaultConfig("general.prefix", "&e&lImprovedFactions", Utility.createItem(Material.NAME_TAG, "&e&lPrefix"));
         addToDefaultConfig("general.printStacktrace", false, Utility.createItem(Material.YELLOW_DYE, "&e&lPrint Stacktrace"));
         addToDefaultConfig("general.commandDescriptions", true);
@@ -27,6 +28,8 @@ public record ConfigManager(MainIF plugin) {
         addToDefaultConfig("general.debugMode", false, Material.COBWEB, "&b&lDebug mode",
                 "&8Get extra infos", "&8Usefull when debugging,", "&8or needing help by moderators");
 
+        addToDefaultConfig("gui.maxCps", 5);
+        addToDefaultConfig("gui.closeGuiCps", 10);
         addToDefaultConfig("gui.wrapLength", 20);
 
         addToDefaultConfig("forbidden.checkFactionNames", true);
@@ -47,6 +50,8 @@ public record ConfigManager(MainIF plugin) {
         addToDefaultConfig("history.territoryChange", false);
 
         addToDefaultConfig("faction.permanent", false);
+        addToDefaultConfig("faction.joinTimeout", 24); //Measured in hours
+        addToDefaultConfig("faction.allowExplosions", true);
         addToDefaultConfig("faction.maxNameLen", 10);
         addToDefaultConfig("faction.invitationTimeout", 300, Material.ALLIUM, "&5",
                 "&8Get extra infos", "&8Usefull when debugging,", "&8or needing help by moderators");

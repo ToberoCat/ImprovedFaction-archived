@@ -59,7 +59,7 @@ public class FactionUtils {
     }
 
     public static List<Player> getAllPlayers(Faction faction) {
-        LinkedList<Player> members = new LinkedList<Player>();
+        LinkedList<Player> members = new LinkedList<>();
         for (FactionMember member : faction.getMembers()) {
             if (member == null) continue;
 
@@ -68,6 +68,17 @@ public class FactionUtils {
         }
         return members;
     }
+
+    public static List<FactionMember> getAllFactionMembers(Faction faction) {
+        LinkedList<FactionMember> members = new LinkedList<>();
+        for (FactionMember member : faction.getMembers()) {
+            if (member == null) continue;
+
+            members.add(member);
+        }
+        return members;
+    }
+
 
 
     public static boolean shouldChunk(Player player, Faction playerFaction, Faction protectionFaction, Chunk chunk) {

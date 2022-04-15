@@ -12,7 +12,7 @@ import java.util.List;
 
 public class WarZoneSubCommand extends SubCommand {
     public WarZoneSubCommand() {
-        super("warzone",  "zones.warzone", LangMessage.COMMAND_ZONES_WARZONE_DESCRIPTION, false);
+        super("warzone", "zones.warzone", LangMessage.COMMAND_ZONES_WARZONE_DESCRIPTION, false);
     }
 
     @Override

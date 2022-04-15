@@ -1,16 +1,14 @@
 package io.github.toberocat.core.utility.command;
 
 import io.github.toberocat.MainIF;
-import io.github.toberocat.core.utility.factions.FactionUtility;
-import io.github.toberocat.core.utility.factions.Faction;
+import io.github.toberocat.core.factions.Faction;
+import io.github.toberocat.core.factions.FactionUtility;
 import io.github.toberocat.core.utility.language.Language;
 import org.bukkit.entity.Player;
 
 import java.util.logging.Level;
 
 public class SubCommandSettings {
-
-    public enum NYI { No, Yes, Ignore }
 
     private String factionPermission;
     private boolean needsAdmin;
@@ -20,7 +18,6 @@ public class SubCommandSettings {
     private String rank;
     private boolean canUseInConsole;
     private boolean useWhenFrozen;
-
     private Object[] eventParameters;
     private boolean isCancellable;
 
@@ -207,4 +204,6 @@ public class SubCommandSettings {
         return result;
          */
     }
+
+    public enum NYI {No, Yes, Ignore}
 }

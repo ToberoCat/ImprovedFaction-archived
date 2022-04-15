@@ -21,7 +21,7 @@ public class HelpSubCommand extends SubCommand {
                     .send(player);
 
             for (SubCommand commandSub : FactionCommand.subCommands) {
-                new PlayerMessageBuilder("&e&l"+commandSub.getSubCommand() + "%" +
+                new PlayerMessageBuilder("&e&l" + commandSub.getSubCommand() + "%" +
                         Language.getMessage(commandSub.getDescription(), player) + ";{HOVER}{CLICK(0)}% &r&7- &8/f " + commandSub.getSubCommand(),
                         "/f " + commandSub.getSubCommand()).send(player);
             }

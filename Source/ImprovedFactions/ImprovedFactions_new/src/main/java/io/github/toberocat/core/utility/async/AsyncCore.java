@@ -14,6 +14,19 @@ import org.bukkit.Bukkit;
 public class AsyncCore<T> {
 
     private static int tasks = 0;
+    protected ReturnCallback<T> callback;
+    protected ResultCallback<T> finishCallback;
+    protected Thread thread;
+    protected boolean hasFinished;
+    protected T threadResult;
+
+    protected AsyncCore(ReturnCallback<T> callback) {
+        this.callback = callback;
+        this.finishCallback = null;
+        this.thread = runThread();
+        this.hasFinished = false;
+        this.threadResult = null;
+    }
 
     public static boolean allTaskFinished() {
         return tasks == 0;
@@ -45,18 +58,12 @@ public class AsyncCore<T> {
         return core;
     }
 
-    protected ReturnCallback<T> callback;
-    protected ResultCallback<T> finishCallback;
-    protected Thread thread;
-    protected boolean hasFinished;
-    protected T threadResult;
+    public static synchronized void addTask() {
+        tasks++;
+    }
 
-    protected AsyncCore(ReturnCallback<T> callback) {
-        this.callback = callback;
-        this.finishCallback = null;
-        this.thread = runThread();
-        this.hasFinished = false;
-        this.threadResult = null;
+    public static synchronized void removeTask() {
+        tasks--;
     }
 
     /**
@@ -69,6 +76,7 @@ public class AsyncCore<T> {
 
     /**
      * Pauses the thread it's called in until the task is done
+     *
      * @return the callback
      */
     public AsyncCore<T> await() {
@@ -84,6 +92,7 @@ public class AsyncCore<T> {
     /**
      * This returns the value the finished thread returned.
      * This is recommended to use when you await the finish of the thread. Else add a finish callback. @see {@link #setFinishCallback(ResultCallback)}
+     *
      * @return The type set while creating
      */
     public T getResult() {
@@ -92,6 +101,7 @@ public class AsyncCore<T> {
 
     /**
      * This will give you if the thread has already finished
+     *
      * @return if thread has finished
      */
     public boolean hasFinished() {
@@ -104,7 +114,9 @@ public class AsyncCore<T> {
      */
     public AsyncCore<T> setFinishCallback(ResultCallback<T> finishCallback) {
         this.finishCallback = finishCallback;
-        if (hasFinished()) { finishCallback.call(threadResult); }
+        if (hasFinished()) {
+            finishCallback.call(threadResult);
+        }
         return this;
     }
 
@@ -119,13 +131,5 @@ public class AsyncCore<T> {
             if (finishCallback != null) finishCallback.call(threadResult);
             removeTask();
         });
-    }
-
-    public static synchronized void addTask() {
-        tasks++;
-    }
-
-    public static synchronized void removeTask() {
-        tasks--;
     }
 }

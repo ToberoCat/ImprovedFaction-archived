@@ -2,8 +2,6 @@ package io.github.toberocat.core.utility.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.toberocat.core.utility.Utility;
-import io.github.toberocat.core.utility.callbacks.ExceptionCallback;
-import io.github.toberocat.core.utility.callbacks.ResultCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +9,7 @@ import java.net.URL;
 
 public class JsonUtility {
 
-    private static ObjectMapper om = new ObjectMapper();
+    private static final ObjectMapper om = new ObjectMapper();
 
     public static boolean SaveObject(File file, Object object) {
         try {
@@ -40,6 +38,7 @@ public class JsonUtility {
         }
         return null;
     }
+
     public static Object ReadObject(File file, Class clazz) throws IOException {
         return om.readValue(file, clazz);
     }

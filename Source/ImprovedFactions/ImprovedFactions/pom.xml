@@ -6,7 +6,7 @@
 
     <groupId>ImprovedFactions</groupId>
     <artifactId>io.github.toberocat.improvedfactions</artifactId>
-    <version>BETAv5.0.6</version>
+    <version>BETAv5.0.7</version>
     <packaging>jar</packaging>
 
     <name>ImprovedFactions</name>

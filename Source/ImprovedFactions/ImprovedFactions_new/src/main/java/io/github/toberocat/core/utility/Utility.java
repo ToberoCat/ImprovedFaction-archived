@@ -3,8 +3,12 @@ package io.github.toberocat.core.utility;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.github.toberocat.MainIF;
+import io.github.toberocat.core.utility.async.AsyncCore;
+import io.github.toberocat.core.utility.callbacks.Callback;
 import io.github.toberocat.core.utility.callbacks.ExceptionCallback;
+import io.github.toberocat.core.utility.events.faction.FactionEvent;
 import io.github.toberocat.core.utility.events.faction.FactionEventCancelledable;
+import io.github.toberocat.core.utility.gitreport.GitReport;
 import io.github.toberocat.core.utility.language.Language;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
@@ -15,6 +19,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
@@ -22,23 +28,31 @@ import java.util.stream.Collectors;
 
 public class Utility {
 
+    public static String printStackToString(Exception e) {
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
+    }
+
     /**
      * Removed the first element in list and returns it
+     *
      * @param list the list where the item should be removed
-     * @param <T> Type of the list
+     * @param <T>  Type of the list
      * @return A objectPair. First object in there is the shifted element and them second is the new list
      */
     public static <T> ObjectPair<T, T[]> shift(T[] list) {
         List<T> t = Arrays.asList(list);
-        MainIF.LogMessage(Level.INFO, ""+list.length);
+        MainIF.LogMessage(Level.INFO, "" + list.length);
         T tShift = t.remove(0);
         return new ObjectPair<>(tShift, toArray(t));
     }
 
     /**
      * Make a generic list to an array
+     *
      * @param list for convertion
-     * @param <T> Type of the list
+     * @param <T>  Type of the list
      * @return The list as an array
      */
     public static <T> T[] toArray(List<T> list) {
@@ -52,8 +66,9 @@ public class Utility {
 
     /**
      * Create a item with a simple formatted name
+     *
      * @param material The material for this item
-     * @param name The title. E.g: "&e&lFactionItem"
+     * @param name     The title. E.g: "&e&lFactionItem"
      * @return itemstack with a custom title and your set material
      */
     public static ItemStack createItem(final Material material, final String name) {
@@ -75,9 +90,10 @@ public class Utility {
 
     /**
      * Create a item with a simple formatted name and lore as array
+     *
      * @param material The material for this item
-     * @param name The title. E.g: "&e&lFactionItem"
-     * @param lore The lore the item should have
+     * @param name     The title. E.g: "&e&lFactionItem"
+     * @param lore     The lore the item should have
      * @return itemstack with a custom title, custom lore and your set material
      */
     public static ItemStack createItem(final Material material, final String name, final String[] lore) {
@@ -104,9 +120,10 @@ public class Utility {
 
     /**
      * Modify an item with a simple formatted name and lore as set
+     *
      * @param stack The old stack to modify
      * @param title The title. E.g: "&e&lFactionItem"
-     * @param lore The lore the item should have
+     * @param lore  The lore the item should have
      * @return the old item tags with modified meta
      */
     public static ItemStack modiflyItem(ItemStack stack, String title, String... lore) {
@@ -135,6 +152,12 @@ public class Utility {
         if (Boolean.TRUE.equals(MainIF.getConfigManager().getValue("general.printStacktrace")))
             e.printStackTrace();
         MainIF.getIF().SaveShutdown(e.getMessage());
+
+        if (MainIF.getConfigManager().getValue("general.sendCrashesToGithub")) {
+            MainIF.LogMessage(Level.INFO, "Please wait while the crash gets reported to the developer. Don't restart or shutdown the server");
+            AsyncCore.Run(() -> GitReport.reportIssue(e)).setFinishCallback((result) -> MainIF.LogMessage(Level.INFO,
+                    "Reported the issue"));
+        }
     }
 
     public static <T> String[] getNames(T enumForNames) {
@@ -153,20 +176,24 @@ public class Utility {
         return Arrays.stream(wrapped.split("\n")).map(x -> prefix + x).collect(Collectors.toList());
     }
 
-    public static synchronized  <T extends FactionEventCancelledable> boolean callEvent(T event) {
+    public static synchronized <T extends FactionEventCancelledable> boolean callEvent(T event) {
         Bukkit.getScheduler().runTask(MainIF.getIF(), () -> Bukkit.getPluginManager().callEvent(event));
 
         return !event.isCancelled();
     }
 
+    public static synchronized <T extends FactionEvent> void callEvent(T event) {
+        Bukkit.getScheduler().runTask(MainIF.getIF(), () -> Bukkit.getPluginManager().callEvent(event));
+    }
+
     public static String getTime(long timing) {
         long time = System.currentTimeMillis() - timing;
         time /= 1000;
-        int secs= (int) (time%60);
+        int secs = (int) (time % 60);
         time /= 60;
-        int mins = (int) (time%60);
+        int mins = (int) (time % 60);
         time /= 60;
-        int hours = (int) (time%24);
+        int hours = (int) (time % 24);
         time /= 24;
         int days = (int) time;
 
@@ -185,9 +212,10 @@ public class Utility {
         item.setItemMeta(skull);
         return item;
     }
+
     public static ItemStack getSkull(String url, int count, String name, String... lore) {
         ItemStack head = new ItemStack(Material.PLAYER_HEAD, count);
-        if(url.isEmpty()) return head;
+        if (url.isEmpty()) return head;
 
         SkullMeta headMeta = (SkullMeta) head.getItemMeta();
         GameProfile profile = new GameProfile(UUID.randomUUID(), null);
@@ -210,5 +238,15 @@ public class Utility {
         if (lore != null) meta.setLore(Arrays.asList(lore));
         head.setItemMeta(meta);
         return head;
+    }
+
+    public static void run(ExceptionCallback cb, Callback except) {
+        try {
+            cb.ECallback();
+        } catch (Exception e) {
+            except(e);
+            except.callback();
+        }
+
     }
 }

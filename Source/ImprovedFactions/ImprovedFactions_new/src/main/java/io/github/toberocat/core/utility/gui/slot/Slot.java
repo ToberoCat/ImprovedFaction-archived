@@ -1,7 +1,6 @@
 package io.github.toberocat.core.utility.gui.slot;
 
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public abstract class Slot {

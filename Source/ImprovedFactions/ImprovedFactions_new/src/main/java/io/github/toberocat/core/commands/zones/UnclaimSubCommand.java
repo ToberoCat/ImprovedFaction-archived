@@ -25,7 +25,7 @@ public class UnclaimSubCommand extends SubCommand {
     protected void CommandExecute(Player player, String[] args) {
         Result result = MainIF.getIF().getClaimManager().removeProtection(player.getLocation().getChunk());
         Language.sendMessage(LangMessage.COMMAND_ZONES_UNCLAIM, player,
-                new Parseable("{chunktype}", (String)result.getPaired()));
+                new Parseable("{chunktype}", (String) result.getPaired()));
     }
 
     @Override

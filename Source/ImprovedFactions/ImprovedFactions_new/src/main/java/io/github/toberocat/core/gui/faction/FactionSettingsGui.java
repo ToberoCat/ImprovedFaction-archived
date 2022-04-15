@@ -1,7 +1,7 @@
 package io.github.toberocat.core.gui.faction;
 
-import io.github.toberocat.core.utility.factions.Faction;
-import io.github.toberocat.core.utility.factions.FactionUtility;
+import io.github.toberocat.core.factions.Faction;
+import io.github.toberocat.core.factions.FactionUtility;
 import io.github.toberocat.core.utility.gui.GUISettings;
 import io.github.toberocat.core.utility.gui.Gui;
 import io.github.toberocat.core.utility.gui.page.Page;
@@ -22,16 +22,6 @@ public class FactionSettingsGui extends Gui {
         renderGui(faction.getFactionPerm().getFactionSettings(), player);
     }
 
-    private void renderGui(Map<String, Setting> settings, Player player) {
-        for (Setting factionSet : settings.values()) {
-            addSlot(Setting.getSlot(factionSet, () -> {
-                slots.remove(currentPage);
-                slots.add(currentPage, new Page());
-                renderGui(settings, player);
-            }));
-        }
-    }
-
     private static GUISettings createSettings() {
         return new GUISettings();
     }
@@ -40,6 +30,16 @@ public class FactionSettingsGui extends Gui {
         Faction faction = FactionUtility.getPlayerFaction(player);
         if (faction == null) return null;
 
-        return Bukkit.createInventory(player, 54, "§e§l"+faction.getDisplayName() + "'s §esettings");
+        return Bukkit.createInventory(player, 54, "§e§l" + faction.getDisplayName() + "'s §esettings");
+    }
+
+    private void renderGui(Map<String, Setting> settings, Player player) {
+        for (Setting factionSet : settings.values()) {
+            addSlot(Setting.getSlot(factionSet, player, () -> {
+                slots.remove(currentPage);
+                slots.add(currentPage, new Page());
+                renderGui(settings, player);
+            }));
+        }
     }
 }

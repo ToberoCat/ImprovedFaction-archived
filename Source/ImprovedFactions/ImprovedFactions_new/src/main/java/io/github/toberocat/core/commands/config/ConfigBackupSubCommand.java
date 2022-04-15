@@ -9,7 +9,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 
-public class ConfigBackupSubCommand extends SubCommand  {
+public class ConfigBackupSubCommand extends SubCommand {
 
     public ConfigBackupSubCommand() {
         super("backup", "config.backup", LangMessage.COMMAND_CONFIG_BACKUP_DESCRIPTION, false);

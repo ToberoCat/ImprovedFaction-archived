@@ -1,12 +1,12 @@
 package io.github.toberocat.core.utility.claim;
 
+import io.github.toberocat.core.factions.Faction;
+import io.github.toberocat.core.factions.FactionUtility;
+import io.github.toberocat.core.utility.Result;
 import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.data.DataAccess;
 import io.github.toberocat.core.utility.data.PersistentDataUtility;
 import io.github.toberocat.core.utility.dynamic.loaders.DynamicLoader;
-import io.github.toberocat.core.utility.factions.Faction;
-import io.github.toberocat.core.utility.Result;
-import io.github.toberocat.core.utility.factions.FactionUtility;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -14,8 +14,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class ClaimManager extends DynamicLoader<Player, Player> {
 
@@ -26,6 +26,10 @@ public class ClaimManager extends DynamicLoader<Player, Player> {
     public static final String UNCLAIMED_CHUNK_REGISTRY = "NONE";
 
     public final Map<String, ArrayList<Dimension>> CLAIMS;
+
+    public static boolean isManageableZone(String registry) {
+        return registry.equals(WARZONE_REGISTRY) || registry.equals(SAFEZONE_REGISTRY);
+    }
 
     public ClaimManager() {
         CLAIMS = new HashMap<>();
@@ -92,7 +96,7 @@ public class ClaimManager extends DynamicLoader<Player, Player> {
     public Result<String> removeProtection(Chunk chunk) {
         if (!PersistentDataUtility.has(PersistentDataUtility.FACTION_CLAIMED_KEY,
                 PersistentDataType.STRING, chunk.getPersistentDataContainer())) {
-            return  new Result(true);
+            return new Result(true);
         }
         String claimRegistry = PersistentDataUtility.read(PersistentDataUtility.FACTION_CLAIMED_KEY,
                 PersistentDataType.STRING,

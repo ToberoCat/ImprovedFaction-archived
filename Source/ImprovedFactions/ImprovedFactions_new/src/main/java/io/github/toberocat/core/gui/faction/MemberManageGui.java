@@ -1,18 +1,15 @@
 package io.github.toberocat.core.gui.faction;
 
-import io.github.toberocat.core.utility.ObjectPair;
+import io.github.toberocat.core.factions.Faction;
 import io.github.toberocat.core.utility.Result;
 import io.github.toberocat.core.utility.Utility;
 import io.github.toberocat.core.utility.async.AsyncCore;
-import io.github.toberocat.core.utility.factions.Faction;
 import io.github.toberocat.core.utility.gui.GUISettings;
 import io.github.toberocat.core.utility.gui.Gui;
-import io.github.toberocat.core.utility.gui.slot.Slot;
 import io.github.toberocat.core.utility.language.Language;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -27,26 +24,33 @@ public class MemberManageGui extends Gui {
         });
 
         if (player.getUniqueId() != managedPlayer.getUniqueId()) {
-            addSlot(Utility.getSkull(managedPlayer, 1, "§eKick " + managedPlayer.getName(), new String[] {
-                        "§8Click to kick", "§6§lWarning: §7This will remove the player from your faction",
-                        "§7Can't be undone"
-                    }), 0, 11, () -> {
+            addSlot(Utility.getSkull(managedPlayer, 1, "§eKick " + managedPlayer.getName(), new String[]{
+                    "§8Click to kick", "§6§lWarning: §7This will remove the player from your faction",
+                    "§7Can't be undone"
+            }), 0, 11, () -> {
                 Result result = faction.kick(managedPlayer);
                 Language.sendRawMessage(result.getPlayerMessage(), player);
                 goBack(player, faction, memberGUISettings);
             });
 
-            addSlot(Utility.getSkull(managedPlayer, 1, "§eBan " + managedPlayer.getName(), new String[] {
-                            "§8Click to ban", "§6§lWarning: §7This will remove the player from your faction",
-                            "§7 and never lets them join again. Can't be undone"
-                    }), 0, 15, () -> {
+            addSlot(Utility.createItem(Material.CARROT, "&eSwap rank", new String[] {
+                    "§8Click to change player rank"
+            }), 0, 13, () -> {
+                AsyncCore.runLaterSync(0, () -> new ManagePlayerRankGui(player, managedPlayer, faction, memberGUISettings));
+            });
+
+            addSlot(Utility.getSkull(managedPlayer, 1, "§eBan " + managedPlayer.getName(), new String[]{
+                    "§8Click to ban", "§6§lWarning: §7This will remove the player from your faction",
+                    "§7 and never lets them join again. Can't be undone"
+            }), 0, 15, () -> {
                 Result result = faction.ban(managedPlayer);
                 Language.sendRawMessage(result.getPlayerMessage(), player);
                 goBack(player, faction, memberGUISettings);
             });
         } else {
-            addSlot(Utility.createItem(Material.WRITTEN_BOOK, "&eCan't manage yourself", new String[] { "&8You aren't able to",
-                    "&8manage yourself", "&8Go back and manage some else" }), 0, 13, () -> {});
+            addSlot(Utility.createItem(Material.WRITTEN_BOOK, "&eCan't manage yourself", new String[]{"&8You aren't able to",
+                    "&8manage yourself", "&8Go back and manage some else"}), 0, 13, () -> {
+            });
         }
     }
 

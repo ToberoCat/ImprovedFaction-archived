@@ -1,19 +1,15 @@
 package io.github.toberocat.core.commands.factions;
 
 import io.github.toberocat.MainIF;
+import io.github.toberocat.core.factions.Faction;
+import io.github.toberocat.core.factions.FactionUtility;
 import io.github.toberocat.core.utility.command.SubCommand;
 import io.github.toberocat.core.utility.command.SubCommandSettings;
-import io.github.toberocat.core.utility.data.DataAccess;
-import io.github.toberocat.core.utility.factions.Faction;
-import io.github.toberocat.core.utility.factions.FactionUtility;
-import io.github.toberocat.core.utility.language.LangMessage;
 import io.github.toberocat.core.utility.language.Language;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public class WhoSubCommand extends SubCommand {
     public WhoSubCommand() {
@@ -51,9 +47,9 @@ public class WhoSubCommand extends SubCommand {
         String displayName = faction.getDisplayName();
 
         String topBottomMessage = "=".repeat(displayName.length() + 10);
-        Language.sendRawMessage("&f"+topBottomMessage, player);
+        Language.sendRawMessage("&f" + topBottomMessage, player);
         Language.sendRawMessage("&f====  &e" + displayName + "&f  ====", player);
-        Language.sendRawMessage("&f"+topBottomMessage, player);
+        Language.sendRawMessage("&f" + topBottomMessage, player);
         Language.sendRawMessage("Motd: &e" + faction.getMotd(), player);
 
         for (String description : faction.getDescription()) {

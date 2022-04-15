@@ -12,25 +12,19 @@ import io.github.toberocat.core.utility.settings.PlayerSettings;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 public abstract class SubCommand {
 
-    protected final ArrayList<SubCommand> subCommands;
-
     private static SubCommand lastSubCommand;
-
-    protected enum CommandExecuteError { NoPermission, NoFaction, NotEnoughArgs, OtherError, PlayerNotFound, OnlyAdminCommand, NoFactionPermission, NoFactionNeed }
-
+    protected final ArrayList<SubCommand> subCommands;
     protected final String subCommand;
     protected final String description;
     protected final boolean manager;
     protected final String permission;
-
-    protected abstract void CommandExecute(Player player, String[] args);
-    protected abstract List<String> CommandTab(Player player, String[] args);
-
-
     public SubCommand(String subCommand, String permission, String descriptionKey, boolean manager) {
         this.subCommand = subCommand;
         this.permission = permission;
@@ -54,17 +48,9 @@ public abstract class SubCommand {
         subCommands = new ArrayList<>();
 
         if (getSettings().isAllowAliases()) {
-            MainIF.getConfigManager().addToDefaultConfig("commands." + permission + ".aliases", new ArrayList<String>(),"commands.yml");
+            MainIF.getConfigManager().addToDefaultConfig("commands." + permission + ".aliases", new ArrayList<String>(), "commands.yml");
             MainIF.getConfigManager().addToDefaultConfig("commands." + permission + ".costs", 0, "commands.yml");
         }
-    }
-
-    protected String getExtendedDescription() {
-        return "extended description";
-    }
-
-    protected String getUsage() {
-        return "usage";
     }
 
     public static List<String> CallSubCommandsTab(List<SubCommand> subCommands, Player player, String[] args) {
@@ -108,7 +94,7 @@ public abstract class SubCommand {
         if (!(Boolean) PlayerSettings.getSettings(player.getUniqueId()).getPlayerSetting()
                 .get("hideCommandDescription").getSelected() && results.size() == 1) {
             for (SubCommand command : subCommands) {
-                if  (results.contains(command.getSubCommand())) {
+                if (results.contains(command.getSubCommand())) {
                     if (lastSubCommand != command) {
                         Language.sendMessage(command.description, player);
                         lastSubCommand = command;
@@ -122,10 +108,6 @@ public abstract class SubCommand {
         return arguments;
     }
 
-    public SubCommandSettings getSettings() {
-        return new SubCommandSettings();
-    }
-
     public static AsyncCore<Boolean> CallSubCommands(String commandPath, List<SubCommand> subCommands, Player player, String[] args) {
         return AsyncCore.Run(() -> {
             if (args.length == 0) return false;
@@ -133,7 +115,7 @@ public abstract class SubCommand {
                 if (args[0].equalsIgnoreCase(command.getSubCommand()) || command.getAliases().contains(args[0])) {
                     String[] newArguments = Arrays.copyOfRange(args, 1, args.length);
                     command.CallSubCommand(player, newArguments);
-                    if(!command.subCommands.isEmpty() && !CallSubCommands(commandPath + command.subCommand, command.subCommands, player, newArguments).await().getResult()) {
+                    if (!command.subCommands.isEmpty() && !CallSubCommands(commandPath + command.subCommand, command.subCommands, player, newArguments).await().getResult()) {
                         if (command.manager) {
                             AsyncCore.Run(() -> {
                                 new PlayerMessageBuilder("&7Usage:&f Hover%Now your" +
@@ -142,7 +124,7 @@ public abstract class SubCommand {
 
                                 for (SubCommand commandSub : command.subCommands) {
                                     String cmd = "/f" + commandPath + " " + command.subCommand + " " + commandSub.subCommand;
-                                    new PlayerMessageBuilder("&e&l"+commandSub.subCommand + "%" +
+                                    new PlayerMessageBuilder("&e&l" + commandSub.subCommand + "%" +
                                             Language.getMessage(commandSub.description, player) + ";{HOVER}{CLICK(0)}% &r&7 - &8" + cmd,
                                             cmd).send(player);
                                 }
@@ -157,6 +139,22 @@ public abstract class SubCommand {
             }
             return false;
         });
+    }
+
+    protected abstract void CommandExecute(Player player, String[] args);
+
+    protected abstract List<String> CommandTab(Player player, String[] args);
+
+    protected String getExtendedDescription() {
+        return "extended description";
+    }
+
+    protected String getUsage() {
+        return "usage";
+    }
+
+    public SubCommandSettings getSettings() {
+        return new SubCommandSettings();
     }
 
     public void CallSubCommand(Player player, String[] args) {
@@ -239,16 +237,16 @@ public abstract class SubCommand {
 
         return false;
     }
-    //? Getters and Setters
 
     public void AddCommand(SubCommand command) {
         subCommands.add(command);
     }
+    //? Getters and Setters
 
     public boolean RemoveCommand(String command) {
         Iterator<SubCommand> subs = subCommands.iterator();
 
-        while(subs.hasNext()) {
+        while (subs.hasNext()) {
             SubCommand cmd = subs.next();
             if (cmd.getSubCommand() == command) {
                 subs.remove();
@@ -274,4 +272,6 @@ public abstract class SubCommand {
     public String getDescription() {
         return description;
     }
+
+    protected enum CommandExecuteError {NoPermission, NoFaction, NotEnoughArgs, OtherError, PlayerNotFound, OnlyAdminCommand, NoFactionPermission, NoFactionNeed}
 }

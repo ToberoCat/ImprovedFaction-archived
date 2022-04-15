@@ -53,7 +53,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
 
     public static Map<UUID, PlayerData> playerData = new HashMap<>();
 
-    public static String VERSION = "BETAv5.0.1";
+    public static String VERSION = "BETAv5.0.7";
 
     public static UpdateChecker updateChecker;
 
@@ -189,7 +189,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
             FactionExpansion.init();
             new FactionExpansion().register();
         } else {
-            getLogger().info("Couldn't find PlaceholderAPI");
+            getLogger().info("Found PlaceholderAPI");
         }
 
         Bukkit.getScheduler().runTaskLater(this, () -> {
@@ -198,7 +198,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
             getLogger().info("IF enabled correctly");
         }, 1);
 
-        //Load extensions
+        //Load extentions
         try {
             ExtensionListLoader.RegenerateExtensionList();
         } catch (IOException e) {
@@ -264,6 +264,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         //Others
         FactionSettings.Init();
         Faction.LoadFactions(this);
+
 
         try {
             if (getConfig().getBoolean("general.updateChecker")) {
@@ -334,7 +335,6 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         }
 
         Metrics metrics = new Metrics(this, 14810);
-        metrics.addCustomChart(new Metrics.SingleLineChart("players", () -> Bukkit.getOnlinePlayers().size()));
     }
     @Override
     public void onDisable() {
@@ -389,6 +389,7 @@ public final class ImprovedFactionsMain extends JavaPlugin {
         }
         return INSTANCE;
     }
+
 
     public static void AddPlayerData(Player player) {
         PersistentDataContainer container = player.getLocation().getChunk().getPersistentDataContainer();

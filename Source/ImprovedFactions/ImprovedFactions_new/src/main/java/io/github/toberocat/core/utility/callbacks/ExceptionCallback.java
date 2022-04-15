@@ -10,5 +10,6 @@ public interface ExceptionCallback extends Callback {
             Utility.except(e);
         }
     }
+
     void ECallback() throws Exception;
 }

@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class ZoneSubCommand extends SubCommand  {
+public class ZoneSubCommand extends SubCommand {
     public ZoneSubCommand() {
         super("zones", LangMessage.COMMAND_ZONES_DESCRIPTION, true);
         subCommands.add(new SafeZoneSubCommand());

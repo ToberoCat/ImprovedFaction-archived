@@ -11,7 +11,6 @@ import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
-import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class MapHandler extends PlayerJoinLoader {
     }
 
     public static void getSingleMap(Player player) {
-        ItemStack map = Utility.createItem(Material.MAP, "&eFaction Map", new String[] {
+        ItemStack map = Utility.createItem(Material.MAP, "&eFaction Map", new String[]{
                 "&8This is a custom rendered map", "&8It will display claimed chunks around you", "",
                 "&e&lMap: &8" + player.getName()
         });
@@ -49,11 +48,13 @@ public class MapHandler extends PlayerJoinLoader {
             player.getInventory().addItem(map);
         }
     }
+
     public static void closeMap(Player player) {
     }
 
     @Override
-    protected void loadPlayer(Player value) {}
+    protected void loadPlayer(Player value) {
+    }
 
     @Override
     protected void unloadPlayer(Player player) {
@@ -63,7 +64,7 @@ public class MapHandler extends PlayerJoinLoader {
                 if (map.get() != null) return;
                 List<String> lore = Utility.getLore(item);
                 if (lore.size() < 1) return;
-                String mapId = lore.get(lore.size()-1);
+                String mapId = lore.get(lore.size() - 1);
 
                 if (ChatColor.stripColor(mapId).equals("Map: " + player.getName())) {
                     map.set(item);

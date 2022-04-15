@@ -2,12 +2,11 @@ package io.github.toberocat.core.listeners;
 
 import io.github.toberocat.MainIF;
 import io.github.toberocat.core.commands.factions.claim.ClaimOneSubCommand;
-import io.github.toberocat.core.commands.factions.unclaim.UnclaimAutoSubCommand;
 import io.github.toberocat.core.commands.factions.unclaim.UnclaimOneSubCommand;
+import io.github.toberocat.core.factions.Faction;
+import io.github.toberocat.core.factions.FactionUtility;
 import io.github.toberocat.core.utility.async.AsyncCore;
 import io.github.toberocat.core.utility.claim.ClaimManager;
-import io.github.toberocat.core.utility.factions.Faction;
-import io.github.toberocat.core.utility.factions.FactionUtility;
 import io.github.toberocat.core.utility.history.History;
 import io.github.toberocat.core.utility.history.territory.Territory;
 import io.github.toberocat.core.utility.language.LangMessage;
@@ -30,8 +29,6 @@ import java.util.UUID;
 public class PlayerMoveListener implements Listener {
 
     public static Map<UUID, ClaimAutoType> AUTO_CLAIM_OPERATIONS = new HashMap<>();
-
-    public enum ClaimAutoType { CLAIM, UNCLAIM }
 
     @EventHandler
     public void OnMove(PlayerMoveEvent event) {
@@ -123,7 +120,7 @@ public class PlayerMoveListener implements Listener {
                 }
             }
 
-            Parseable[] parses = new Parseable[] {new Parseable("{territory}", text),
+            Parseable[] parses = new Parseable[]{new Parseable("{territory}", text),
                     new Parseable("{relation}", relation)};
 
             switch (pos) {
@@ -138,4 +135,6 @@ public class PlayerMoveListener implements Listener {
             }
         });
     }
+
+    public enum ClaimAutoType {CLAIM, UNCLAIM}
 }

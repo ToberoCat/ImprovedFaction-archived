@@ -23,12 +23,12 @@ public class MessageSystem extends PlayerJoinLoader {
     public static void sendMessage(UUID uuid, String message) {
         AsyncCore.Run(() -> {
             OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-           if (player.isOnline()) {
-               player.getPlayer().sendMessage(message);
-           } else {
-               ArrayList<String> messages = MESSAGES.putIfAbsent(uuid, new ArrayList<>());
-               messages.add(message);
-           }
+            if (player.isOnline()) {
+                player.getPlayer().sendMessage(message);
+            } else {
+                ArrayList<String> messages = MESSAGES.putIfAbsent(uuid, new ArrayList<>());
+                messages.add(message);
+            }
         });
     }
 

@@ -11,6 +11,7 @@ public abstract class Extension {
 
     protected ExtensionRegistry registry;
     protected boolean enabled = false;
+
     /**
      * Empty constructor needed, else not able to load .jar
      */
@@ -66,6 +67,7 @@ public abstract class Extension {
     /**
      * This function is called when the extension is enabling.
      * This should add all the functionally needed in this extension
+     *
      * @param plugin the JavaPlugin
      */
     protected void OnEnable(MainIF plugin) {
@@ -75,9 +77,11 @@ public abstract class Extension {
     public final void Disable(MainIF plugin) {
         OnDisable(plugin);
     }
+
     /**
      * This function is called when the extension is disabling.
      * This should remove all the functionally needed in this extension
+     *
      * @param plugin the JavaPlugin
      */
     protected void OnDisable(MainIF plugin) {

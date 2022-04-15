@@ -2,7 +2,6 @@ package io.github.toberocat.core.utility.settings.type;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.toberocat.core.utility.callbacks.ResultCallback;
-import io.github.toberocat.core.utility.settings.type.Setting;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -11,10 +10,11 @@ public class CallbackSettings extends Setting {
     private String type;
     private ResultCallback<Player> callback;
 
-    public CallbackSettings() {}
+    public CallbackSettings() {
+    }
 
-    public CallbackSettings(ResultCallback<Player> callback, String type, ItemStack display) {
-        super(null, display);
+    public CallbackSettings(ResultCallback<Player> callback, String settingName, String type, ItemStack display) {
+        super(settingName, null, display);
         this.callback = callback;
         this.type = type;
     }
