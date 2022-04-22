@@ -33,6 +33,10 @@ public class OnChunkEntered implements Listener {
                 "faction-claimed");
         PlayerData playerData = ImprovedFactionsMain.playerData.get(event.getPlayer().getUniqueId());
 
+        if (!ImprovedFactionsMain.getPlugin().getConfig().getStringList("general.worlds").contains(event.getChunk().getWorld().getName())) {
+            return;
+        }
+
         if (UnclaimAutoChunkSubCommand.autoUnclaim.contains(event.getPlayer().getUniqueId()) && playerData.playerFaction != null) {
             Utils.UnClaimChunk(event.getPlayer());
         }
