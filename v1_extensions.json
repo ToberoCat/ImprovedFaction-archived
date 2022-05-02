@@ -1,0 +1,14 @@
+[{
+  "fileName" : "filename",
+  "displayName" : "displayName",
+  "description" : "description",
+  "guiIcon" : "ACACIA_SAPLING",
+  "sha256" : "",
+  "author" : "Tobero",
+  "downloadLinks" : {
+    "1.1" : "https://example.com"
+  },
+  "newestVersion" : {
+    "version" : "v1.0"
+  }
+}]
