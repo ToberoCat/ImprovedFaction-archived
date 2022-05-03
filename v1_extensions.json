@@ -1,8 +1,8 @@
 [ {
-  "fileName" : "fileName",
-  "displayName" : "displayName",
-  "registryName" : "reg",
-  "description" : [ "Desc" ],
+  "fileName" : "ExampleExtension",
+  "displayName" : "Example extension",
+  "registryName" : "example_extension",
+  "description" : [ "This extension is", "a example for other devs" ],
   "guiIcon" : "ACACIA_SAPLING",
   "downloadLinks" : {
     "1.0" : "https://example.com/"
@@ -10,6 +10,6 @@
   "newestVersion" : {
     "version" : "Snap-1.0"
   },
-  "author" : "author",
+  "author" : "Tobero",
   "sha256" : "sha256"
 } ]
