@@ -5,7 +5,8 @@
   "description" : [ "This extension is", "a example for other devs" ],
   "guiIcon" : "ACACIA_SAPLING",
   "downloadLinks" : {
-    "1.0" : "https://example.com/"
+    "1.0" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/ExampleExtension.jar?raw=true",
+    "1.1" : "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/ExampleExtension.jar?raw=true"
   },
   "newestVersion" : {
     "version" : "Snap-1.0"
