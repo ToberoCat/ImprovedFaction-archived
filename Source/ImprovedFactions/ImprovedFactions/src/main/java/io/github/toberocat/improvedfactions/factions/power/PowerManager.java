@@ -58,7 +58,7 @@ public class PowerManager {
             if (member == null) continue;
             OfflinePlayer off = Bukkit.getOfflinePlayer(member.getUuid());
 
-            if (off.isOnline()) {
+            if (off.isOnline() && ImprovedFactionsMain.getPlugin().getConfig().getStringList("general.worlds").contains(off.getPlayer().getWorld().getName())) {
                 off.getPlayer().sendMessage(Language.getPrefix() + Language.format(
                         "&eSomeone died in your faction. You current power is &b" + power));
                 if (power < faction.getClaimedChunks()) {
