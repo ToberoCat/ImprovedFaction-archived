@@ -37,10 +37,10 @@
       "1.3": "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/HomeExtension.jar?raw=true"
     },
     "newestVersion": {
-      "version": "1.0"
+      "version": "1.1"
     },
     "author": "Tobero",
-    "sha256": "dff0e4e3894fdd6bda85f9795f27da7f4762cb4f903cf8e01f197526f36e98ca",
+    "sha256": "190ff374e4fc12c05d53d98c996aceb1817dd0239a4eb71489f685784dc63d1e",
     "minVersion": "1.3",
     "testVersions": [
       "1.3"
