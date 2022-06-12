@@ -34,7 +34,8 @@
     ],
     "guiIcon": "RED_BED",
     "downloadLinks": {
-      "1.3": "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/HomeExtension.jar?raw=true"
+      "1.3": "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/HomeExtension.jar?raw=true",
+      "1.3.3": "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/HomeExtension.jar?raw=true"
     },
     "newestVersion": {
       "version": "1.1"
@@ -43,7 +44,29 @@
     "sha256": "190ff374e4fc12c05d53d98c996aceb1817dd0239a4eb71489f685784dc63d1e",
     "minVersion": "1.3",
     "testVersions": [
-      "1.3"
+      "1.3", "1.3.3"
+    ]
+  },
+  {
+    "fileName": "DynmapExtension",
+    "displayName": "Dynmap extension",
+    "registryName": "dynmap_extension",
+    "description": [
+      "This extension displays",
+      "factions on dynmap"
+    ],
+    "guiIcon": "COARSE_DIRT",
+    "downloadLinks": {
+      "1.3.3": "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/DynmapExtension.jar?raw=true"
+    },
+    "newestVersion": {
+      "version": "1.0"
+    },
+    "author": "Tobero",
+    "sha256": "7480987186c32e928728dd3259fa99c2c5623c910ce71f8b7fb3b095381f3842",
+    "minVersion": "1.3.3",
+    "testVersions": [
+      "1.3.3"
     ]
   }
 ]
