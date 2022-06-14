@@ -68,5 +68,28 @@
     "testVersions": [
       "1.3.3"
     ]
+  },
+  {
+    "fileName": "FactionMapGui",
+    "displayName": "Map gui extension",
+    "registryName": "faction_map_gui_extension",
+    "description": [
+      "This extension displays",
+      "the faction claims now in a gui",
+      "instead of the chat box"
+    ],
+    "guiIcon": "MAP",
+    "downloadLinks": {
+      "1.3.3": "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/FactionMapGui.jar?raw=true"
+    },
+    "newestVersion": {
+      "version": "1.0"
+    },
+    "author": "Tobero",
+    "sha256": "61b9a2884bc2995d213eb98fd6937939c07c000f0a5f4ff3f8c49cc6cfac9f54",
+    "minVersion": "1.0",
+    "testVersions": [
+      "1.3.3"
+    ]
   }
 ]
