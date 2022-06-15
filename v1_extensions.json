@@ -92,5 +92,28 @@
     "testVersions": [
       "1.3.3"
     ]
+  },
+  {
+    "fileName": "MassClaimExtension.jar",
+    "displayName": "Mass claim extension",
+    "registryName": "mass_claim_extension",
+    "description": [
+      "This extension allows the user",
+      "to claim chunks with a wand",
+      "just like worldedit"
+    ],
+    "guiIcon": "WOODEN_AXE",
+    "downloadLinks": {
+      "1.3.3": "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/MassClaimExtension.jar?raw=true"
+    },
+    "newestVersion": {
+      "version": "1.0"
+    },
+    "author": "Tobero",
+    "sha256": "1f3cbf5dd4aed8b65b9b3408802be0055503e9be5ea43d7eb891efa657a5150f",
+    "minVersion": "1.0",
+    "testVersions": [
+      "1.4"
+    ]
   }
 ]
