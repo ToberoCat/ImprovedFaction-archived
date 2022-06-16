@@ -91,13 +91,13 @@
     },
     "author": "Tobero",
     "sha256": "61b9a2884bc2995d213eb98fd6937939c07c000f0a5f4ff3f8c49cc6cfac9f54",
-    "minVersion": "1.0",
+    "minVersion": "1.3.3",
     "testVersions": [
       "1.3.3"
     ]
   },
   {
-    "fileName": "MassClaimExtension.jar",
+    "fileName": "MassClaimExtension",
     "displayName": "Mass claim extension",
     "registryName": "mass_claim_extension",
     "description": [
@@ -115,7 +115,30 @@
     },
     "author": "Tobero",
     "sha256": "1f3cbf5dd4aed8b65b9b3408802be0055503e9be5ea43d7eb891efa657a5150f",
-    "minVersion": "1.0",
+    "minVersion": "1.4",
+    "testVersions": [
+      "1.4"
+    ]
+  },
+  {
+    "fileName": "ChatMessageExtension",
+    "displayName": "Chat message extension",
+    "registryName": "chat_message_extension",
+    "description": [
+      "This extension adds two",
+      "new chats, faction and allied"
+    ],
+    "guiIcon": "KNOWLEDGE_BOOK",
+    "downloadLinks": {
+      "1.3.3": "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/ChatMessageExtension.jar?raw=true",
+      "1.4": "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/ChatMessageExtension.jar?raw=true"
+    },
+    "newestVersion": {
+      "version": "1.0"
+    },
+    "author": "Tobero",
+    "sha256": "9c8731fe08adf3cc1ca86a6788f0e52afd258716cc8b70382c943a49be7ecc67",
+    "minVersion": "1.4",
     "testVersions": [
       "1.4"
     ]
