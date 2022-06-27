@@ -147,5 +147,29 @@
     "testVersions": [
       "1.4.2"
     ]
+  },
+  {
+    "fileName": "ChunkParticleExtension",
+    "displayName": "Particle border extension",
+    "registryName": "chunk_particles_extension",
+    "description": [
+      "This extension adds particle",
+      "borders around the claims",
+      "",
+      "&6&lWarning: &7This can cause server performance issues"
+    ],
+    "guiIcon": "SUGAR",
+    "downloadLinks": {
+      "1.5": "https://github.com/ToberoCat/ImprovedFaction/blob/master/Extensions_v1/ChunkParticleExtension.jar?raw=true"
+    },
+    "newestVersion": {
+      "version": "1.5"
+    },
+    "author": "Tobero",
+    "sha256": "e950ebbb02b847069c136690e523b346f73bc955559ae38d2efc204f164771c5",
+    "minVersion": "1.5",
+    "testVersions": [
+      "1.5"
+    ]
   }
 ]
